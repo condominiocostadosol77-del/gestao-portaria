@@ -24,7 +24,7 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
           Excluir
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64" align="end">
+      <PopoverContent className="w-64 bottom-full mb-2" align="end">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none flex items-center gap-2 text-red-600">
@@ -314,6 +314,12 @@ export default function Visitantes() {
     });
   };
 
+  const handleDelete = (visitante: any) => {
+    if (window.confirm('Tem certeza que deseja excluir este registro?')) {
+      deleteMutation.mutate(visitante.id);
+    }
+  };
+
   const filteredVisitantes = visitantes.filter((v: any) => {
     const searchLower = searchTerm.toLowerCase();
     const matchSearch = v.nome?.toLowerCase().includes(searchLower) ||
@@ -348,14 +354,9 @@ export default function Visitantes() {
     );
   };
 
-  const handleDelete = (visitante: any) => {
-    if (window.confirm('Tem certeza que deseja excluir este registro?')) {
-      deleteMutation.mutate(visitante.id);
-    }
-  };
-
   return (
     <div className="p-6 lg:p-8 space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Visitantes</h1>
@@ -374,6 +375,7 @@ export default function Visitantes() {
         </Button>
       </div>
 
+      {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -397,6 +399,7 @@ export default function Visitantes() {
         </CardContent>
       </Card>
 
+      {/* Form */}
       {showForm && (
         <VisitanteForm
           visitante={editingVisitante}
@@ -415,6 +418,7 @@ export default function Visitantes() {
         />
       )}
 
+      {/* Lista de Visitantes */}
       <div className="grid gap-4">
         {isLoading ? (
           <Card className="p-8 text-center">
@@ -505,7 +509,7 @@ export default function Visitantes() {
                           Registrar Saída
                         </Button>
                       )}
-                      <DeleteAction onConfirm={() => deleteMutation.mutate(visitante.id)} />
+                      <DeleteAction onConfirm={() => handleDelete(visitante)} />
                     </div>
                   </div>
                 </div>

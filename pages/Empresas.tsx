@@ -22,7 +22,7 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
           Excluir
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64" align="end">
+      <PopoverContent className="w-64 bottom-full mb-2" align="end">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none flex items-center gap-2 text-red-600">
