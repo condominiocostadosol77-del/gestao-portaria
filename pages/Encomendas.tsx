@@ -46,7 +46,7 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
           Registrar Retirada
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80" align="end">
+      <PopoverContent className="w-80 bottom-full mb-2" align="end">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Confirmar Retirada</h4>

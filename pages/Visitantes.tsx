@@ -83,14 +83,14 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
     }
   };
 
-  // Lógica de filtro para a busca
+  // Lógica de filtro robusta para a busca (Nome, Unidade, Bloco)
   const filteredMoradores = moradores?.filter((m: any) => {
-    const searchLower = searchQuery.toLowerCase();
-    return (
-      m.nome_completo.toLowerCase().includes(searchLower) ||
-      m.unidade.toString().toLowerCase().includes(searchLower) ||
-      (m.bloco && m.bloco.toLowerCase().includes(searchLower))
-    );
+    const searchLower = searchQuery.toLowerCase() || "";
+    const nome = m.nome_completo?.toLowerCase() || "";
+    const unidade = m.unidade?.toString().toLowerCase() || "";
+    const bloco = m.bloco?.toLowerCase() || "";
+    
+    return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
   });
 
   return (
