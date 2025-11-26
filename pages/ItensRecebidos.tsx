@@ -167,7 +167,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               <Label htmlFor="tipo_operacao">Tipo de Operação *</Label>
               <Select 
                 value={formData.tipo_operacao} 
-                onValueChange={(value) => setFormData({ ...formData, tipo_operacao: value })}
+                onValueChange={(value: string) => setFormData({ ...formData, tipo_operacao: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -265,7 +265,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               <Input
                 id="unidade"
                 value={formData.unidade}
-                onChange={(e) => setFormData({ ...formData, unidade: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, unidade: e.target.value })}
                 placeholder="Ex: 101"
                 required
                 disabled={usarMoradorCadastrado}
@@ -277,7 +277,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               <Input
                 id="bloco"
                 value={formData.bloco}
-                onChange={(e) => setFormData({ ...formData, bloco: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, bloco: e.target.value })}
                 placeholder="Ex: A"
                 disabled={usarMoradorCadastrado}
               />
@@ -290,7 +290,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               <Input
                 id="nome_pessoa_externa"
                 value={formData.nome_pessoa_externa}
-                onChange={(e) => setFormData({ ...formData, nome_pessoa_externa: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, nome_pessoa_externa: e.target.value })}
                 placeholder="Nome da pessoa"
                 required
               />
@@ -301,7 +301,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               <Input
                 id="telefone_pessoa_externa"
                 value={formData.telefone_pessoa_externa}
-                onChange={(e) => setFormData({ ...formData, telefone_pessoa_externa: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, telefone_pessoa_externa: e.target.value })}
                 placeholder="(00) 00000-0000"
               />
             </div>
@@ -311,7 +311,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               <Input
                 id="descricao_item"
                 value={formData.descricao_item}
-                onChange={(e) => setFormData({ ...formData, descricao_item: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, descricao_item: e.target.value })}
                 placeholder="Ex: Sacola com roupas, Alicate, Perfume, etc"
                 required
               />
@@ -321,7 +321,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               <Label htmlFor="turno">Turno *</Label>
               <Select 
                 value={formData.turno} 
-                onValueChange={(value) => setFormData({ ...formData, turno: value })}
+                onValueChange={(value: string) => setFormData({ ...formData, turno: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -338,7 +338,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               <Textarea
                 id="observacoes"
                 value={formData.observacoes}
-                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, observacoes: e.target.value })}
                 placeholder="Informações adicionais..."
                 rows={3}
               />
@@ -504,6 +504,11 @@ _Equipe da Portaria_`;
     return matchSearch && matchStatus;
   });
 
+  // Cálculos para os contadores
+  const totalItens = itens.length;
+  const itensPendentes = itens.filter((i: any) => i.status === 'aguardando_retirada').length;
+  const itensRetirados = itens.filter((i: any) => i.status === 'retirado').length;
+
   const getStatusBadge = (status: string) => {
     const configs: any = {
       aguardando_retirada: { 
@@ -558,6 +563,7 @@ _Equipe da Portaria_`;
         </Button>
       </div>
 
+      {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -572,9 +578,24 @@ _Equipe da Portaria_`;
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-slate-100">
-                <TabsTrigger value="todos">Todos</TabsTrigger>
-                <TabsTrigger value="aguardando_retirada">Pendentes</TabsTrigger>
-                <TabsTrigger value="retirado">Retirados</TabsTrigger>
+                <TabsTrigger value="todos" className="gap-2">
+                  Todos
+                  <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">
+                    {totalItens}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="aguardando_retirada" className="gap-2">
+                  Pendentes
+                  <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs">
+                    {itensPendentes}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="retirado" className="gap-2">
+                  Retirados
+                  <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">
+                    {itensRetirados}
+                  </span>
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
