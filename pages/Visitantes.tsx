@@ -68,6 +68,7 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
   });
   const [openMorador, setOpenMorador] = useState(false);
   const [usarMoradorCadastrado, setUsarMoradorCadastrado] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleMoradorChange = (moradorId: string) => {
     const morador = moradores.find((m: any) => m.id === moradorId);
@@ -81,6 +82,16 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
       });
     }
   };
+
+  // Lógica de filtro para a busca
+  const filteredMoradores = moradores?.filter((m: any) => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      m.nome_completo.toLowerCase().includes(searchLower) ||
+      m.unidade.toString().toLowerCase().includes(searchLower) ||
+      (m.bloco && m.bloco.toLowerCase().includes(searchLower))
+    );
+  });
 
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
@@ -171,11 +182,18 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0">
                       <Command>
-                        <CommandInput placeholder="Digite o nome do morador..." onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                        <CommandInput 
+                          placeholder="Digite nome, unidade ou bloco..." 
+                          value={searchQuery}
+                          onChange={(e: any) => setSearchQuery(e.target.value)}
+                          onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} 
+                        />
                         <CommandList>
-                          <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                          {filteredMoradores?.length === 0 && (
+                            <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                          )}
                           <CommandGroup>
-                            {moradores?.map((m: any) => (
+                            {filteredMoradores?.map((m: any) => (
                               <CommandItem
                                 key={m.id}
                                 value={`${m.nome_completo} ${m.unidade} ${m.bloco || ''}`}
