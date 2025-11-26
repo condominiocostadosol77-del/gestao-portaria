@@ -259,7 +259,8 @@ export default function FolhaPonto() {
   });
 
   const filteredRegistros = registros.filter((r: any) => {
-    const matchSearch = r.nome_funcionario?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchSearch = r.nome_funcionario?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                        r.observacoes?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchTurno = turnoFilter === 'todos' || r.turno === turnoFilter;
     const matchFuncionario = funcionarioFilter === 'todos' || r.funcionario_id === funcionarioFilter;
     return matchSearch && matchTurno && matchFuncionario;
@@ -414,7 +415,7 @@ export default function FolhaPonto() {
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
                 <Input
-                  placeholder="Buscar por funcionário..."
+                  placeholder="Buscar por funcionário ou observação..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
