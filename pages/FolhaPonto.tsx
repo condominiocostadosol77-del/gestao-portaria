@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -394,6 +395,24 @@ export default function FolhaPonto() {
     }
   };
 
+  const handleClearAll = async () => {
+    if (window.confirm('ATENÇÃO: Tem certeza que deseja excluir TODOS os registros de ponto exibidos? Esta ação não pode ser desfeita.')) {
+      const recordsToDelete = filteredRegistros;
+      
+      if (recordsToDelete.length === 0) {
+        alert('Não há registros para excluir com os filtros atuais.');
+        return;
+      }
+
+      for (const record of recordsToDelete) {
+        await base44.entities.RegistroPonto.delete(record.id);
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['registros-ponto'] });
+      alert(`${recordsToDelete.length} registros excluídos com sucesso.`);
+    }
+  };
+
   const getFilterLabel = () => {
     if (funcionarioFilter === 'todos') return 'Todos os funcionários';
     const func = funcionarios.find((f: any) => f.id === funcionarioFilter);
@@ -475,16 +494,28 @@ export default function FolhaPonto() {
                 </Select>
               </div>
 
-              <Button
-                type="button"
-                onClick={handleExportPDF}
-                variant="outline"
-                className="gap-2"
-                disabled={filteredRegistros.length === 0}
-              >
-                <Download className="h-4 w-4" />
-                Exportar PDF
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={handleClearAll}
+                  variant="destructive"
+                  className="gap-2"
+                  disabled={filteredRegistros.length === 0}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Limpar Tudo
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleExportPDF}
+                  variant="outline"
+                  className="gap-2"
+                  disabled={filteredRegistros.length === 0}
+                >
+                  <Download className="h-4 w-4" />
+                  Exportar PDF
+                </Button>
+              </div>
             </div>
           </div>
         </CardContent>
