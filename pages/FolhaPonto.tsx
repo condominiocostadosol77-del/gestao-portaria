@@ -126,7 +126,7 @@ function RegistroPontoForm({ registro, funcionarios, onSubmit, onCancel }: any) 
                 id="data"
                 type="date"
                 value={formData.data}
-                onChange={(e) => setFormData({ ...formData, data: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, data: e.target.value })}
                 required
               />
             </div>
@@ -135,7 +135,7 @@ function RegistroPontoForm({ registro, funcionarios, onSubmit, onCancel }: any) 
               <Label htmlFor="turno">Turno *</Label>
               <Select 
                 value={formData.turno} 
-                onValueChange={(value) => setFormData({ ...formData, turno: value })}
+                onValueChange={(value: any) => setFormData({ ...formData, turno: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -153,7 +153,7 @@ function RegistroPontoForm({ registro, funcionarios, onSubmit, onCancel }: any) 
                 id="hora_entrada"
                 type="time"
                 value={formData.hora_entrada}
-                onChange={(e) => setFormData({ ...formData, hora_entrada: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, hora_entrada: e.target.value })}
               />
             </div>
 
@@ -163,7 +163,7 @@ function RegistroPontoForm({ registro, funcionarios, onSubmit, onCancel }: any) 
                 id="hora_saida"
                 type="time"
                 value={formData.hora_saida}
-                onChange={(e) => setFormData({ ...formData, hora_saida: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, hora_saida: e.target.value })}
               />
             </div>
 
@@ -171,7 +171,7 @@ function RegistroPontoForm({ registro, funcionarios, onSubmit, onCancel }: any) 
               <Label htmlFor="tipo">Tipo *</Label>
               <Select 
                 value={formData.tipo} 
-                onValueChange={(value) => setFormData({ ...formData, tipo: value })}
+                onValueChange={(value: any) => setFormData({ ...formData, tipo: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -190,7 +190,7 @@ function RegistroPontoForm({ registro, funcionarios, onSubmit, onCancel }: any) 
               <Textarea
                 id="observacoes"
                 value={formData.observacoes}
-                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, observacoes: e.target.value })}
                 placeholder="Informações adicionais sobre o registro..."
                 rows={3}
               />
