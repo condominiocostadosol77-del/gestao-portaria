@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -266,7 +265,7 @@ export default function Empresas() {
                 placeholder="Buscar por nome..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 !text-red-600"
+                className="pl-10 !text-black"
               />
             </div>
             <div className="flex items-center gap-2">

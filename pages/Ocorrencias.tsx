@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -246,8 +245,8 @@ export default function Ocorrencias() {
             <Input
               placeholder="Buscar por funcionário ou texto do relato..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
+              onChange={(e: any) => setSearchTerm(e.target.value)}
+              className="pl-10 !text-black"
             />
           </div>
         </CardContent>
