@@ -265,15 +265,15 @@ export default function Empresas() {
               <Input
                 placeholder="Buscar por nome..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                className="pl-10 !text-red-600"
               />
             </div>
             <div className="flex items-center gap-2">
                 <Input
                   type="date"
                   value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
+                  onChange={(e: any) => setDateFilter(e.target.value)}
                   className="w-auto"
                 />
                 {dateFilter && (
