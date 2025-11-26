@@ -183,6 +183,7 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
                     <PopoverContent className="w-full p-0">
                       <Command>
                         <CommandInput 
+                          autoFocus
                           placeholder="Digite nome, unidade ou bloco..." 
                           value={searchQuery}
                           onChange={(e: any) => setSearchQuery(e.target.value)}

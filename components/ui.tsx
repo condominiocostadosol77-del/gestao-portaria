@@ -37,7 +37,13 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
     return (
       <input
         type={type}
-        style={{ backgroundColor: '#ffffff', color: '#000000', height: '40px', opacity: 1 }}
+        style={{ 
+          backgroundColor: '#ffffff', 
+          color: '#000000', 
+          height: '40px', 
+          opacity: 1,
+          borderColor: '#e2e8f0'
+        }}
         className={cn(
           "flex h-10 w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           "!bg-white !text-black !placeholder-gray-500", // NUCLEAR OPTION: Force white bg and black text
@@ -82,7 +88,12 @@ export const Badge = ({ className, variant = "default", ...props }: React.HTMLAt
 export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(({ className, ...props }, ref) => {
   return (
     <textarea
-      style={{ backgroundColor: '#ffffff', color: '#000000', opacity: 1 }}
+      style={{ 
+        backgroundColor: '#ffffff', 
+        color: '#000000', 
+        opacity: 1,
+        borderColor: '#e2e8f0'
+      }}
       className={cn(
         "flex min-h-[80px] w-full rounded-md border border-input px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
         "!bg-white !text-black !placeholder-gray-500", // NUCLEAR OPTION
@@ -238,14 +249,18 @@ export const PopoverTrigger = ({ asChild, children }: any) => {
   });
 };
 
-export const PopoverContent = ({ className, children }: any) => {
+export const PopoverContent = ({ className, children, align = "start" }: any) => {
   const context = useContext(PopoverContext);
   if (!context?.open) return null;
 
   return (
     <>
       <div className="fixed inset-0 z-[9998]" onClick={() => context.onOpenChange(false)} />
-      <div className={cn("absolute z-[9999] w-full rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95 mt-1 bg-white", className)}>
+      <div className={cn(
+        "absolute z-[9999] w-full rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95 mt-1 bg-white", 
+        align === "end" ? "right-0" : "left-0",
+        className
+      )}>
         {children}
       </div>
     </>
@@ -262,7 +277,14 @@ export const Command = ({ className, children }: any) => (
 export const CommandInput = ({ className, ...props }: any) => (
   <div className="flex items-center border-b px-3">
     <input
-      style={{ backgroundColor: '#ffffff', color: '#000000', height: '40px', opacity: 1 }}
+      style={{ 
+        backgroundColor: '#ffffff', 
+        color: '#000000', 
+        height: '40px', 
+        opacity: 1,
+        width: '100%',
+        outline: 'none'
+      }}
       className={cn(
         "flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-50",
         "!bg-white !text-black !placeholder-gray-500", // NUCLEAR OPTION
