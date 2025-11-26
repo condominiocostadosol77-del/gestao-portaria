@@ -536,15 +536,21 @@ _Equipe da Portaria_`;
   const getMoradorNome = (encomenda: any) => {
     if (encomenda.morador_id) {
       const morador = moradores.find((m: any) => m.id === encomenda.morador_id);
-      return morador?.nome_completo || 'Morador não encontrado';
+      return morador?.nome_completo || null;
     }
     return null;
   };
 
   const filteredEncomendas = encomendas.filter((e: any) => {
-    const matchSearch = e.unidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       e.remetente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       e.codigo_retirada?.toLowerCase().includes(searchTerm.toLowerCase());
+    const moradorNome = getMoradorNome(e)?.toLowerCase() || '';
+    const searchLower = searchTerm.toLowerCase();
+    
+    const matchSearch = e.unidade?.toLowerCase().includes(searchLower) ||
+                       e.remetente?.toLowerCase().includes(searchLower) ||
+                       e.codigo_retirada?.toLowerCase().includes(searchLower) ||
+                       e.bloco?.toLowerCase().includes(searchLower) ||
+                       moradorNome.includes(searchLower);
+                       
     const matchStatus = statusFilter === 'todos' || e.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -612,7 +618,7 @@ _Equipe da Portaria_`;
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <Input
-                placeholder="Buscar por unidade, remetente ou código..."
+                placeholder="Buscar por nome, unidade, bloco, remetente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"

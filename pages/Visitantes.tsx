@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -314,10 +315,12 @@ export default function Visitantes() {
   };
 
   const filteredVisitantes = visitantes.filter((v: any) => {
-    const matchSearch = v.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       v.unidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       v.morador_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       v.documento?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchSearch = v.nome?.toLowerCase().includes(searchLower) ||
+                       v.unidade?.toLowerCase().includes(searchLower) ||
+                       v.morador_nome?.toLowerCase().includes(searchLower) ||
+                       v.documento?.toLowerCase().includes(searchLower) ||
+                       v.bloco?.toLowerCase().includes(searchLower); // Block search
     const matchStatus = statusFilter === 'todos' || v.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -421,6 +424,7 @@ export default function Visitantes() {
             <Card key={visitante.id} className="border-0 shadow-lg hover:shadow-xl transition-all bg-white/80 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row gap-6">
+                  {/* Avatar */}
                   <div className="flex-shrink-0">
                     <div className="h-24 w-24 rounded-xl bg-teal-100 flex items-center justify-center">
                       <UserCheck className="h-10 w-10 text-teal-600" />
@@ -481,6 +485,7 @@ export default function Visitantes() {
                       </p>
                     )}
 
+                    {/* Actions */}
                     <div className="flex flex-wrap gap-2 pt-2">
                       {visitante.status === 'no_condominio' && (
                         <Button

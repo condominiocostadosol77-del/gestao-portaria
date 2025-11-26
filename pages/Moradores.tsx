@@ -240,9 +240,11 @@ export default function Moradores() {
   });
 
   const filteredMoradores = moradores.filter((m: any) => {
-    const matchSearch = m.nome_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       m.unidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       m.bloco?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchSearch = m.nome_completo?.toLowerCase().includes(searchLower) ||
+                       m.unidade?.toLowerCase().includes(searchLower) ||
+                       m.bloco?.toLowerCase().includes(searchLower) ||
+                       m.cpf?.includes(searchTerm); // CPF search
     const matchStatus = statusFilter === 'todos' || m.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -281,7 +283,7 @@ export default function Moradores() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <Input
-                placeholder="Buscar por nome, unidade ou bloco..."
+                placeholder="Buscar por nome, unidade, bloco ou CPF..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"

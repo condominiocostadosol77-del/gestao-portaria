@@ -494,9 +494,11 @@ _Equipe da Portaria_`;
   };
 
   const filteredItens = itens.filter((i: any) => {
-    const matchSearch = i.descricao_item?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       i.nome_pessoa_externa?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       i.unidade?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchSearch = i.descricao_item?.toLowerCase().includes(searchLower) ||
+                       i.nome_pessoa_externa?.toLowerCase().includes(searchLower) ||
+                       i.unidade?.toLowerCase().includes(searchLower) ||
+                       i.bloco?.toLowerCase().includes(searchLower); // Block search
     const matchStatus = statusFilter === 'todos' || i.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -561,7 +563,7 @@ _Equipe da Portaria_`;
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <Input
-                placeholder="Buscar por item, pessoa ou unidade..."
+                placeholder="Buscar por item, pessoa, unidade ou bloco..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"

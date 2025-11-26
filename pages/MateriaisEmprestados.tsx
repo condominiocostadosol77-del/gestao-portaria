@@ -320,10 +320,13 @@ export default function MateriaisEmprestados() {
   };
 
   const filteredMateriais = materiais.filter((m: any) => {
-    const matchSearch = m.material?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       m.unidade?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       m.morador_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       m.nome_terceiro?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchSearch = m.material?.toLowerCase().includes(searchLower) ||
+                       m.unidade?.toLowerCase().includes(searchLower) ||
+                       m.morador_nome?.toLowerCase().includes(searchLower) ||
+                       m.nome_terceiro?.toLowerCase().includes(searchLower) ||
+                       m.bloco?.toLowerCase().includes(searchLower) || // Block
+                       m.documento_terceiro?.toLowerCase().includes(searchLower); // Document (Third party)
     const matchStatus = statusFilter === 'todos' || m.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -377,7 +380,7 @@ export default function MateriaisEmprestados() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <Input
-                placeholder="Buscar por material, unidade ou pessoa..."
+                placeholder="Buscar por material, unidade, bloco, pessoa ou documento..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"

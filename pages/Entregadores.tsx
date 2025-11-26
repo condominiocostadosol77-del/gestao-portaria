@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -224,9 +225,11 @@ export default function Entregadores() {
   });
 
   const filteredEntregadores = entregadores.filter((e: any) => {
-    const matchSearch = e.nome_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       e.empresa?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       e.cpf?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    const matchSearch = e.nome_completo?.toLowerCase().includes(searchLower) ||
+                       e.empresa?.toLowerCase().includes(searchLower) ||
+                       e.cpf?.toLowerCase().includes(searchLower) ||
+                       e.rg?.toLowerCase().includes(searchLower); // RG search
     const matchStatus = statusFilter === 'todos' || e.status === statusFilter;
     return matchSearch && matchStatus;
   });
@@ -266,7 +269,7 @@ export default function Entregadores() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
               <Input
-                placeholder="Buscar por nome, empresa ou CPF..."
+                placeholder="Buscar por nome, empresa, CPF ou RG..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
