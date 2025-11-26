@@ -372,7 +372,7 @@ export default function Visitantes() {
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
               <Input
                 placeholder="Buscar por nome, documento, unidade ou morador..."
                 value={searchTerm}
@@ -423,90 +423,4 @@ export default function Visitantes() {
           filteredVisitantes.map((visitante: any) => (
             <Card key={visitante.id} className="border-0 shadow-lg hover:shadow-xl transition-all bg-white/80 backdrop-blur-sm">
               <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-6">
-                  {/* Avatar */}
-                  <div className="flex-shrink-0">
-                    <div className="h-24 w-24 rounded-xl bg-teal-100 flex items-center justify-center">
-                      <UserCheck className="h-10 w-10 text-teal-600" />
-                    </div>
-                  </div>
-
-                  <div className="flex-1 space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                      <div>
-                        <h3 className="text-xl font-bold text-slate-900">{visitante.nome}</h3>
-                        {visitante.morador_nome && (
-                          <p className="text-slate-600">Visitando: {visitante.morador_nome}</p>
-                        )}
-                      </div>
-                      {getStatusBadge(visitante.status)}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
-                      <div>
-                        <span className="text-slate-500">Unidade:</span>
-                        <p className="font-medium text-slate-900">
-                          {visitante.unidade}{visitante.bloco ? ` - Bloco ${visitante.bloco}` : ''}
-                        </p>
-                      </div>
-                      {visitante.documento && (
-                        <div>
-                          <span className="text-slate-500">Documento:</span>
-                          <p className="font-medium text-slate-900">{visitante.documento}</p>
-                        </div>
-                      )}
-                      {visitante.telefone && (
-                        <div>
-                          <span className="text-slate-500">Telefone:</span>
-                          <p className="font-medium text-slate-900">{visitante.telefone}</p>
-                        </div>
-                      )}
-                      {visitante.data_hora_entrada && (
-                        <div>
-                          <span className="text-slate-500">Entrada:</span>
-                          <p className="font-medium text-slate-900">
-                            {format(new Date(visitante.data_hora_entrada), 'dd/MM/yyyy HH:mm')}
-                          </p>
-                        </div>
-                      )}
-                      {visitante.data_hora_saida && (
-                        <div>
-                          <span className="text-slate-500">Saída:</span>
-                          <p className="font-medium text-slate-900">
-                            {format(new Date(visitante.data_hora_saida), 'dd/MM/yyyy HH:mm')}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-
-                    {visitante.observacoes && (
-                      <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
-                        {visitante.observacoes}
-                      </p>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {visitante.status === 'no_condominio' && (
-                        <Button
-                          type="button"
-                          onClick={() => registrarSaida(visitante)}
-                          size="sm"
-                          className="bg-blue-600 hover:bg-blue-700"
-                        >
-                          <LogOut className="h-4 w-4 mr-1" />
-                          Registrar Saída
-                        </Button>
-                      )}
-                      <DeleteAction onConfirm={() => deleteMutation.mutate(visitante.id)} />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
+                <div

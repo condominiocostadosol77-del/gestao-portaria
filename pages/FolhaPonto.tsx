@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -380,6 +381,12 @@ export default function FolhaPonto() {
     }
   };
 
+  const getFilterLabel = () => {
+    if (funcionarioFilter === 'todos') return 'Todos os funcionários';
+    const func = funcionarios.find((f: any) => f.id === funcionarioFilter);
+    return func ? func.nome_completo : 'Funcionário desconhecido';
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -405,7 +412,7 @@ export default function FolhaPonto() {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" />
                 <Input
                   placeholder="Buscar por funcionário..."
                   value={searchTerm}
@@ -427,7 +434,9 @@ export default function FolhaPonto() {
                 <Filter className="h-4 w-4 text-slate-500" />
                 <Select value={funcionarioFilter} onValueChange={setFuncionarioFilter}>
                   <SelectTrigger className="w-full sm:w-64">
-                    <SelectValue placeholder="Filtrar por funcionário" />
+                    <SelectValue>
+                        {getFilterLabel()}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="todos">Todos os funcionários</SelectItem>
