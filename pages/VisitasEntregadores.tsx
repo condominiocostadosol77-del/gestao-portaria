@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -65,6 +66,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
     observacoes: ''
   });
   const [openEntregador, setOpenEntregador] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleEntregadorChange = (entregadorId: string) => {
     const entregador = entregadores.find((e: any) => e.id === entregadorId);
@@ -72,10 +74,22 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
       setFormData({
         ...formData,
         entregador_id: entregadorId,
-        entregador_nome: entregador.nome_completo
+        entregador_nome: entregador.nome_completo,
+        // Se o entregador já tem empresa vinculada, sugerimos preencher
+        empresa_id: !formData.empresa_id && entregador.empresa ? empresas.find((emp: any) => emp.nome === entregador.empresa)?.id || '' : formData.empresa_id
       });
     }
   };
+
+  const filteredEntregadores = entregadores?.filter((e: any) => {
+    if (e.status !== 'ativo') return false;
+    const searchLower = searchQuery.toLowerCase();
+    const nomeMatch = e.nome_completo.toLowerCase().includes(searchLower);
+    const cpfMatch = e.cpf && e.cpf.includes(searchLower);
+    const rgMatch = e.rg && e.rg.includes(searchLower);
+    
+    return nomeMatch || cpfMatch || rgMatch;
+  });
 
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
@@ -90,6 +104,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
       <CardContent className="p-6">
         <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Entregador */}
             <div className="md:col-span-2">
               <Label htmlFor="entregador">Entregador *</Label>
               <Popover open={openEntregador} onOpenChange={setOpenEntregador}>
@@ -109,11 +124,18 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-0">
                   <Command>
-                    <CommandInput placeholder="Digite o nome, CPF ou RG..." onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                    <CommandInput 
+                      placeholder="Digite o nome, CPF ou RG..." 
+                      value={searchQuery}
+                      onChange={(e: any) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} 
+                    />
                     <CommandList>
-                      <CommandEmpty>Nenhum entregador encontrado.</CommandEmpty>
+                      {filteredEntregadores?.length === 0 && (
+                        <CommandEmpty>Nenhum entregador encontrado.</CommandEmpty>
+                      )}
                       <CommandGroup>
-                        {entregadores?.filter((e: any) => e.status === 'ativo').map((e: any) => (
+                        {filteredEntregadores?.map((e: any) => (
                           <CommandItem
                             key={e.id}
                             value={`${e.nome_completo} ${e.cpf || ''} ${e.rg || ''} ${e.empresa}`}
@@ -147,6 +169,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
               </Popover>
             </div>
 
+            {/* Empresa */}
             <div className="md:col-span-2">
               <Label htmlFor="empresa">Empresa</Label>
               <Select 
@@ -175,6 +198,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
               </Select>
             </div>
 
+            {/* Quantidade de Encomendas */}
             <div>
               <Label htmlFor="quantidade">Quantidade de Encomendas *</Label>
               <Input
@@ -187,6 +211,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
               />
             </div>
 
+            {/* Turno */}
             <div>
               <Label htmlFor="turno">Turno</Label>
               <Select 
@@ -203,6 +228,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
               </Select>
             </div>
 
+            {/* Observações */}
             <div className="md:col-span-2">
               <Label htmlFor="observacoes">Observações</Label>
               <Textarea
@@ -233,6 +259,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
 // --- Page ---
 export default function VisitasEntregadores() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingVisita, setEditingVisita] = useState<any>(null);
   const queryClient = useQueryClient();

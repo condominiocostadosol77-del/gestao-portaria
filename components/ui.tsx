@@ -37,7 +37,7 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
     return (
       <input
         type={type}
-        className={cn("flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-slate-900 ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50", className)}
+        className={cn("flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-black ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50", className)}
         ref={ref}
         {...props}
       />
@@ -77,7 +77,7 @@ export const Badge = ({ className, variant = "default", ...props }: React.HTMLAt
 export const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(({ className, ...props }, ref) => {
   return (
     <textarea
-      className={cn("flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-slate-900 ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50", className)}
+      className={cn("flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-black ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50", className)}
       ref={ref}
       {...props}
     />
@@ -149,7 +149,7 @@ export const SelectTrigger = ({ className, children }: any) => {
     <button
       type="button"
       onClick={() => context?.setOpen(!context.open)}
-      className={cn("flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-slate-900 ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50", className)}
+      className={cn("flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm text-black ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50", className)}
     >
       {children}
       <ChevronDown className="h-4 w-4 opacity-50" />
@@ -252,7 +252,7 @@ export const Command = ({ className, children }: any) => (
 export const CommandInput = ({ className, ...props }: any) => (
   <div className="flex items-center border-b px-3">
     <input
-      className={cn("flex h-11 w-full rounded-md bg-transparent py-3 text-sm text-slate-900 outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50", className)}
+      className={cn("flex h-11 w-full rounded-md bg-transparent py-3 text-sm text-black outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50", className)}
       {...props}
     />
   </div>
