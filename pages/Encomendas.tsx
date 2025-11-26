@@ -438,6 +438,11 @@ export default function Encomendas() {
     staleTime: 30000,
   });
 
+  // Cálculos para os contadores
+  const totalEncomendas = encomendas.length;
+  const encomendasPendentes = encomendas.filter((e: any) => e.status === 'aguardando_retirada').length;
+  const encomendasRetiradas = encomendas.filter((e: any) => e.status === 'retirada').length;
+
   const enviarWhatsApp = (encomenda: any, morador: any) => {
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     
@@ -627,9 +632,24 @@ _Equipe da Portaria_`;
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-slate-100">
-                <TabsTrigger value="todos">Todos</TabsTrigger>
-                <TabsTrigger value="aguardando_retirada">Pendentes</TabsTrigger>
-                <TabsTrigger value="retirada">Retiradas</TabsTrigger>
+                <TabsTrigger value="todos" className="gap-2">
+                  Todos
+                  <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">
+                    {totalEncomendas}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="aguardando_retirada" className="gap-2">
+                  Pendentes
+                  <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs">
+                    {encomendasPendentes}
+                  </span>
+                </TabsTrigger>
+                <TabsTrigger value="retirada" className="gap-2">
+                  Retiradas
+                  <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">
+                    {encomendasRetiradas}
+                  </span>
+                </TabsTrigger>
               </TabsList>
             </Tabs>
           </div>
