@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -332,7 +333,9 @@ export default function Funcionarios() {
     }
 
     const matchSearch = f.nome_completo?.toLowerCase().includes(searchLower) ||
-                       f.cpf?.toLowerCase().includes(searchLower);
+                       f.cpf?.toLowerCase().includes(searchLower) ||
+                       f.cargo?.toLowerCase().includes(searchLower) || // Search by Cargo
+                       f.turno?.toLowerCase().includes(searchLower);   // Search by Turno
     const matchStatus = statusFilter === 'todos' || f.status === statusFilter;
     return matchSearch && matchStatus && dateMatch;
   });
@@ -382,7 +385,7 @@ export default function Funcionarios() {
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
               <Input
-                placeholder="Buscar por nome ou CPF..."
+                placeholder="Buscar por nome, CPF, cargo ou turno..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
                 className="pl-10 !text-black"
