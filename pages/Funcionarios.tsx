@@ -4,6 +4,7 @@ import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Badge, Tabs, TabsList, TabsTrigger, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea, Popover, PopoverContent, PopoverTrigger } from '../components/ui';
 import { Plus, Search, Users, User, Phone, Mail, X, Save, Upload, Trash2, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
 
 // --- Delete Action Component ---
 function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
@@ -279,6 +280,7 @@ function FuncionarioForm({ funcionario, onSubmit, onCancel }: any) {
 // --- Page ---
 export default function Funcionarios() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingFuncionario, setEditingFuncionario] = useState<any>(null);
@@ -316,10 +318,24 @@ export default function Funcionarios() {
   });
 
   const filteredFuncionarios = funcionarios.filter((f: any) => {
-    const matchSearch = f.nome_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       f.cpf?.toLowerCase().includes(searchTerm.toLowerCase());
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Date filter
+    let dateMatch = true;
+    if (dateFilter) {
+      const itemDate = f.data_admissao || f.created_date;
+      if (itemDate) {
+        const formattedItemDate = format(new Date(itemDate), 'yyyy-MM-dd');
+        dateMatch = formattedItemDate === dateFilter;
+      } else {
+        dateMatch = false;
+      }
+    }
+
+    const matchSearch = f.nome_completo?.toLowerCase().includes(searchLower) ||
+                       f.cpf?.toLowerCase().includes(searchLower);
     const matchStatus = statusFilter === 'todos' || f.status === statusFilter;
-    return matchSearch && matchStatus;
+    return matchSearch && matchStatus && dateMatch;
   });
 
   const getStatusBadge = (status: string) => {
@@ -373,6 +389,19 @@ export default function Funcionarios() {
                 className="pl-10"
               />
             </div>
+            <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-auto"
+                />
+                {dateFilter && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+            </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-slate-100">
                 <TabsTrigger value="todos">Todos</TabsTrigger>
@@ -410,7 +439,7 @@ export default function Funcionarios() {
         ) : filteredFuncionarios.length === 0 ? (
           <Card className="p-8 text-center border-0 shadow-lg md:col-span-2 lg:col-span-3">
             <Users className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhum funcionário encontrado</p>
+            <p className="text-slate-500">Nenhum funcionário encontrado {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : (
           filteredFuncionarios.map((funcionario: any) => (

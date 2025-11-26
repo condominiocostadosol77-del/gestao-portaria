@@ -4,6 +4,7 @@ import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Badge, Tabs, TabsList, TabsTrigger, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea, Popover, PopoverContent, PopoverTrigger } from '../components/ui';
 import { Plus, Search, Users, User, Phone, Mail, Home, X, Save, Trash2, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
 
 // --- Delete Action Component ---
 function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
@@ -203,6 +204,7 @@ function MoradorForm({ morador, onSubmit, onCancel }: any) {
 // --- Page ---
 export default function Moradores() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingMorador, setEditingMorador] = useState<any>(null);
@@ -241,12 +243,25 @@ export default function Moradores() {
 
   const filteredMoradores = moradores.filter((m: any) => {
     const searchLower = searchTerm.toLowerCase();
+    
+    // Date filter
+    let dateMatch = true;
+    if (dateFilter) {
+      const itemDate = m.created_date;
+      if (itemDate) {
+        const formattedItemDate = format(new Date(itemDate), 'yyyy-MM-dd');
+        dateMatch = formattedItemDate === dateFilter;
+      } else {
+        dateMatch = false;
+      }
+    }
+
     const matchSearch = m.nome_completo?.toLowerCase().includes(searchLower) ||
                        m.unidade?.toLowerCase().includes(searchLower) ||
                        m.bloco?.toLowerCase().includes(searchLower) ||
                        m.cpf?.includes(searchTerm); // CPF search
     const matchStatus = statusFilter === 'todos' || m.status === statusFilter;
-    return matchSearch && matchStatus;
+    return matchSearch && matchStatus && dateMatch;
   });
 
   const getStatusBadge = (status: string) => {
@@ -279,15 +294,30 @@ export default function Moradores() {
 
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-              <Input
-                placeholder="Buscar por nome, unidade, bloco ou CPF..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+                <Input
+                  placeholder="Buscar por nome, unidade, bloco ou CPF..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-auto"
+                />
+                {dateFilter && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-slate-100">
@@ -325,7 +355,7 @@ export default function Moradores() {
         ) : filteredMoradores.length === 0 ? (
           <Card className="p-8 text-center border-0 shadow-lg md:col-span-2 lg:col-span-3">
             <Users className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhum morador encontrado</p>
+            <p className="text-slate-500">Nenhum morador encontrado {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : (
           filteredMoradores.map((morador: any) => (

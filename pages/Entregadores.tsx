@@ -4,6 +4,7 @@ import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Badge, Tabs, TabsList, TabsTrigger, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea, Popover, PopoverContent, PopoverTrigger } from '../components/ui';
 import { Plus, Search, Truck, User, Phone, FileText, X, Save, Trash2, AlertTriangle } from 'lucide-react';
+import { format } from 'date-fns';
 
 // --- Delete Action Component ---
 function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
@@ -75,6 +76,7 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
       <CardContent className="p-6">
         <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Nome */}
             <div className="md:col-span-2">
               <Label htmlFor="nome">Nome Completo *</Label>
               <Input
@@ -86,6 +88,7 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
               />
             </div>
 
+            {/* Empresa */}
             <div>
               <Label htmlFor="empresa">Empresa *</Label>
               <Select 
@@ -105,6 +108,7 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
               </Select>
             </div>
 
+            {/* Telefone */}
             <div>
               <Label htmlFor="telefone">Telefone</Label>
               <Input
@@ -115,6 +119,7 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
               />
             </div>
 
+            {/* CPF */}
             <div>
               <Label htmlFor="cpf">CPF</Label>
               <Input
@@ -135,6 +140,7 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
               />
             </div>
 
+            {/* Status */}
             <div>
               <Label htmlFor="status">Status</Label>
               <Select 
@@ -152,6 +158,7 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
               </Select>
             </div>
 
+            {/* Observações */}
             <div className="md:col-span-2">
               <Label htmlFor="observacoes">Observações</Label>
               <Textarea
@@ -182,6 +189,7 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
 // --- Page ---
 export default function Entregadores() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingEntregador, setEditingEntregador] = useState<any>(null);
@@ -226,12 +234,25 @@ export default function Entregadores() {
 
   const filteredEntregadores = entregadores.filter((e: any) => {
     const searchLower = searchTerm.toLowerCase();
+    
+    // Date filter
+    let dateMatch = true;
+    if (dateFilter) {
+      const itemDate = e.created_date;
+      if (itemDate) {
+        const formattedItemDate = format(new Date(itemDate), 'yyyy-MM-dd');
+        dateMatch = formattedItemDate === dateFilter;
+      } else {
+        dateMatch = false;
+      }
+    }
+
     const matchSearch = e.nome_completo?.toLowerCase().includes(searchLower) ||
                        e.empresa?.toLowerCase().includes(searchLower) ||
                        e.cpf?.toLowerCase().includes(searchLower) ||
                        e.rg?.toLowerCase().includes(searchLower); // RG search
     const matchStatus = statusFilter === 'todos' || e.status === statusFilter;
-    return matchSearch && matchStatus;
+    return matchSearch && matchStatus && dateMatch;
   });
 
   const getStatusBadge = (status: string) => {
@@ -275,6 +296,19 @@ export default function Entregadores() {
                 className="pl-10"
               />
             </div>
+            <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-auto"
+                />
+                {dateFilter && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+            </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-slate-100">
                 <TabsTrigger value="todos">Todos</TabsTrigger>
@@ -313,7 +347,7 @@ export default function Entregadores() {
         ) : filteredEntregadores.length === 0 ? (
           <Card className="p-8 text-center border-0 shadow-lg md:col-span-2 lg:col-span-3">
             <Truck className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhum entregador encontrado</p>
+            <p className="text-slate-500">Nenhum entregador encontrado {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : (
           filteredEntregadores.map((entregador: any) => (

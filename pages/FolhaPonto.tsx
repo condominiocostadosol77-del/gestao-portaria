@@ -215,6 +215,7 @@ function RegistroPontoForm({ registro, funcionarios, onSubmit, onCancel }: any) 
 // --- Page ---
 export default function FolhaPonto() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [turnoFilter, setTurnoFilter] = useState('todos');
   const [funcionarioFilter, setFuncionarioFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
@@ -263,7 +264,15 @@ export default function FolhaPonto() {
                         r.observacoes?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchTurno = turnoFilter === 'todos' || r.turno === turnoFilter;
     const matchFuncionario = funcionarioFilter === 'todos' || r.funcionario_id === funcionarioFilter;
-    return matchSearch && matchTurno && matchFuncionario;
+    
+    // Date filter
+    let dateMatch = true;
+    if (dateFilter) {
+        // r.data already in YYYY-MM-DD from form/backend
+        dateMatch = r.data === dateFilter;
+    }
+
+    return matchSearch && matchTurno && matchFuncionario && dateMatch;
   });
 
   const getTurnoColor = (turno: string) => {
@@ -425,6 +434,19 @@ export default function FolhaPonto() {
                   className="pl-10"
                 />
               </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-auto"
+                />
+                {dateFilter && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <Tabs value={turnoFilter} onValueChange={setTurnoFilter}>
                 <TabsList className="bg-slate-100">
                   <TabsTrigger value="todos">Todos</TabsTrigger>
@@ -495,7 +517,7 @@ export default function FolhaPonto() {
         ) : filteredRegistros.length === 0 ? (
           <Card className="p-8 text-center border-0 shadow-lg">
             <Calendar className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhum registro encontrado</p>
+            <p className="text-slate-500">Nenhum registro encontrado {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : (
           filteredRegistros.map((registro: any) => (
