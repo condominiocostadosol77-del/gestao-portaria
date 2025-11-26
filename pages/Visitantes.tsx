@@ -85,10 +85,11 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
 
   // Lógica de filtro robusta para a busca (Nome, Unidade, Bloco)
   const filteredMoradores = moradores?.filter((m: any) => {
-    const searchLower = searchQuery.toLowerCase() || "";
-    const nome = m.nome_completo?.toLowerCase() || "";
-    const unidade = m.unidade?.toString().toLowerCase() || "";
-    const bloco = m.bloco?.toLowerCase() || "";
+    // Proteção contra valores nulos/undefined
+    const searchLower = (searchQuery || "").toLowerCase();
+    const nome = (m.nome_completo || "").toLowerCase();
+    const unidade = (m.unidade || "").toString().toLowerCase();
+    const bloco = (m.bloco || "").toLowerCase();
     
     return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
   });

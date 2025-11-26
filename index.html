@@ -97,6 +97,31 @@
         --input: 217.2 32.6% 17.5%;
         --ring: 212.7 26.8% 83.9%;
       }
+
+      /* CORREÇÃO DEFINITIVA PARA INPUTS INVISÍVEIS EM PRODUÇÃO */
+      /* Força fundo branco e texto preto independente do tema do navegador/sistema */
+      input, textarea, select {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        -webkit-text-fill-color: #000000 !important; /* Importante para autofill do Chrome/Safari */
+        opacity: 1 !important;
+        border-color: #e2e8f0 !important;
+      }
+      
+      /* Garante que o placeholder (texto de ajuda) seja visível */
+      input::placeholder, textarea::placeholder {
+        color: #6b7280 !important; /* gray-500 */
+        opacity: 1 !important;
+      }
+
+      /* Remove o estilo padrão de autofill que as vezes deixa o fundo azul/amarelo */
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover, 
+      input:-webkit-autofill:focus, 
+      input:-webkit-autofill:active{
+          -webkit-box-shadow: 0 0 0 30px white inset !important;
+          -webkit-text-fill-color: black !important;
+      }
     </style>
   <script type="importmap">
 {
