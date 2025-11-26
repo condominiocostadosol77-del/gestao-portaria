@@ -259,6 +259,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
 // --- Page ---
 export default function VisitasEntregadores() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingVisita, setEditingVisita] = useState<any>(null);
@@ -312,11 +313,25 @@ export default function VisitasEntregadores() {
 
   const filteredVisitas = visitas.filter((v: any) => {
     const entregador = entregadores.find((e: any) => e.id === v.entregador_id);
-    const matchSearch = v.entregador_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       v.empresa_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       entregador?.cpf?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       entregador?.rg?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchSearch;
+    const searchLower = searchTerm.toLowerCase();
+    
+    // Date filter
+    let dateMatch = true;
+    if (dateFilter) {
+      const itemDate = v.data_hora || v.created_date;
+      if (itemDate) {
+        const formattedItemDate = format(new Date(itemDate), 'yyyy-MM-dd');
+        dateMatch = formattedItemDate === dateFilter;
+      } else {
+        dateMatch = false;
+      }
+    }
+
+    const matchSearch = v.entregador_nome?.toLowerCase().includes(searchLower) ||
+                       v.empresa_nome?.toLowerCase().includes(searchLower) ||
+                       entregador?.cpf?.toLowerCase().includes(searchLower) ||
+                       entregador?.rg?.toLowerCase().includes(searchLower);
+    return matchSearch && dateMatch;
   });
 
   const getTurnoColor = (turno: string) => {
@@ -393,14 +408,31 @@ export default function VisitasEntregadores() {
 
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-            <Input
-              placeholder="Buscar por entregador, empresa ou documento..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+                <Input
+                  placeholder="Buscar por entregador, empresa ou documento..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-auto"
+                />
+                {dateFilter && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -432,7 +464,7 @@ export default function VisitasEntregadores() {
         ) : filteredVisitas.length === 0 ? (
           <Card className="p-8 text-center border-0 shadow-lg">
             <TruckIcon className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhuma visita registrada</p>
+            <p className="text-slate-500">Nenhuma visita registrada {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : (
           filteredVisitas.map((visita: any) => (

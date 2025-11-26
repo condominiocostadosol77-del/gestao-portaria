@@ -263,6 +263,7 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
 // --- Page ---
 export default function MateriaisEmprestados() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<any>(null);
@@ -321,6 +322,19 @@ export default function MateriaisEmprestados() {
 
   const filteredMateriais = materiais.filter((m: any) => {
     const searchLower = searchTerm.toLowerCase();
+    
+    // Date filter
+    let dateMatch = true;
+    if (dateFilter) {
+      const itemDate = m.data_hora_emprestimo || m.created_date;
+      if (itemDate) {
+        const formattedItemDate = format(new Date(itemDate), 'yyyy-MM-dd');
+        dateMatch = formattedItemDate === dateFilter;
+      } else {
+        dateMatch = false;
+      }
+    }
+
     const matchSearch = m.material?.toLowerCase().includes(searchLower) ||
                        m.unidade?.toLowerCase().includes(searchLower) ||
                        m.morador_nome?.toLowerCase().includes(searchLower) ||
@@ -328,7 +342,7 @@ export default function MateriaisEmprestados() {
                        m.bloco?.toLowerCase().includes(searchLower) || // Block
                        m.documento_terceiro?.toLowerCase().includes(searchLower); // Document (Third party)
     const matchStatus = statusFilter === 'todos' || m.status === statusFilter;
-    return matchSearch && matchStatus;
+    return matchSearch && matchStatus && dateMatch;
   });
 
   const getStatusBadge = (status: string) => {
@@ -376,15 +390,30 @@ export default function MateriaisEmprestados() {
 
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-              <Input
-                placeholder="Buscar por material, unidade, bloco, pessoa ou documento..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+                <Input
+                  placeholder="Buscar por material, unidade, bloco, pessoa ou documento..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-auto"
+                />
+                {dateFilter && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-slate-100">
@@ -423,7 +452,7 @@ export default function MateriaisEmprestados() {
         ) : filteredMateriais.length === 0 ? (
           <Card className="p-8 text-center border-0 shadow-lg">
             <Wrench className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhum empréstimo encontrado</p>
+            <p className="text-slate-500">Nenhum empréstimo encontrado {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : (
           filteredMateriais.map((material: any) => (

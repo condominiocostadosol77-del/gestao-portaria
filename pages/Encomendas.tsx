@@ -15,7 +15,8 @@ import {
   Check,
   ChevronsUpDown,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  CalendarIcon
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '../lib/utils';
@@ -153,10 +154,15 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
     }
   };
 
-  const filteredMoradores = moradores?.filter((m: any) => 
-    m.nome_completo.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    m.unidade.includes(searchQuery)
-  );
+  // Lógica de filtro robusta para a busca (Nome, Unidade, Bloco)
+  const filteredMoradores = moradores?.filter((m: any) => {
+    const searchLower = (searchQuery || "").toLowerCase();
+    const nome = (m.nome_completo || "").toLowerCase();
+    const unidade = (m.unidade || "").toString().toLowerCase();
+    const bloco = (m.bloco || "").toLowerCase();
+    
+    return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
+  });
 
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
@@ -217,7 +223,8 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
                     <PopoverContent className="w-full p-0">
                       <Command>
                         <CommandInput 
-                          placeholder="Digite o nome ou unidade..." 
+                          autoFocus
+                          placeholder="Digite nome, unidade ou bloco..." 
                           value={searchQuery}
                           onChange={(e: any) => setSearchQuery(e.target.value)}
                           onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }}
@@ -415,6 +422,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
 // --- Main Encomendas Component ---
 export default function Encomendas() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingEncomenda, setEditingEncomenda] = useState<any>(null);
@@ -551,6 +559,18 @@ _Equipe da Portaria_`;
     const moradorNome = getMoradorNome(e)?.toLowerCase() || '';
     const searchLower = searchTerm.toLowerCase();
     
+    // Date filter logic
+    let dateMatch = true;
+    if (dateFilter) {
+      const itemDate = e.data_hora_recebimento || e.created_date;
+      if (itemDate) {
+        const formattedItemDate = format(new Date(itemDate), 'yyyy-MM-dd');
+        dateMatch = formattedItemDate === dateFilter;
+      } else {
+        dateMatch = false;
+      }
+    }
+
     const matchSearch = e.unidade?.toLowerCase().includes(searchLower) ||
                        e.remetente?.toLowerCase().includes(searchLower) ||
                        e.codigo_retirada?.toLowerCase().includes(searchLower) ||
@@ -558,7 +578,7 @@ _Equipe da Portaria_`;
                        moradorNome.includes(searchLower);
                        
     const matchStatus = statusFilter === 'todos' || e.status === statusFilter;
-    return matchSearch && matchStatus;
+    return matchSearch && matchStatus && dateMatch;
   });
 
   const getStatusBadge = (status: string) => {
@@ -620,18 +640,33 @@ _Equipe da Portaria_`;
       {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-              <Input
-                placeholder="Buscar por nome, unidade, bloco, remetente..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+                <Input
+                  placeholder="Buscar por nome, unidade, bloco, remetente..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-auto"
+                />
+                {dateFilter && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-              <TabsList className="bg-slate-100">
+              <TabsList className="bg-slate-100 w-full lg:w-auto overflow-x-auto">
                 <TabsTrigger value="todos" className="gap-2">
                   Todos
                   <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">
@@ -692,7 +727,7 @@ _Equipe da Portaria_`;
         ) : filteredEncomendas.length === 0 ? (
           <Card className="p-8 text-center border-0 shadow-lg">
             <Package className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhuma encomenda encontrada</p>
+            <p className="text-slate-500">Nenhuma encomenda encontrada {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : (
           filteredEncomendas.map((encomenda: any) => (

@@ -137,6 +137,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
   });
   const [usarMoradorCadastrado, setUsarMoradorCadastrado] = useState(false);
   const [openMorador, setOpenMorador] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleMoradorChange = (moradorId: string) => {
     const morador = moradores.find((m: any) => m.id === moradorId);
@@ -149,6 +150,17 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
       });
     }
   };
+
+  // Lógica de filtro robusta para a busca (Nome, Unidade, Bloco)
+  const filteredMoradores = moradores?.filter((m: any) => {
+    // Proteção contra valores nulos/undefined
+    const searchLower = (searchQuery || "").toLowerCase();
+    const nome = (m.nome_completo || "").toLowerCase();
+    const unidade = (m.unidade || "").toString().toLowerCase();
+    const bloco = (m.bloco || "").toLowerCase();
+    
+    return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
+  });
 
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
@@ -229,11 +241,19 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
                     </PopoverTrigger>
                     <PopoverContent className="w-full p-0">
                       <Command>
-                        <CommandInput placeholder="Digite o nome do morador..." onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                        <CommandInput 
+                          autoFocus
+                          placeholder="Digite o nome, unidade ou bloco..." 
+                          value={searchQuery}
+                          onChange={(e: any) => setSearchQuery(e.target.value)}
+                          onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} 
+                        />
                         <CommandList>
-                          <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                          {filteredMoradores?.length === 0 && (
+                            <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                          )}
                           <CommandGroup>
-                            {moradores?.map((m: any) => (
+                            {filteredMoradores?.map((m: any) => (
                               <CommandItem
                                 key={m.id}
                                 value={`${m.nome_completo} ${m.unidade} ${m.bloco || ''}`}
@@ -377,6 +397,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
 // --- Page ---
 export default function ItensRecebidos() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [dateFilter, setDateFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
@@ -496,12 +517,25 @@ _Equipe da Portaria_`;
 
   const filteredItens = itens.filter((i: any) => {
     const searchLower = searchTerm.toLowerCase();
+    
+    // Date filter
+    let dateMatch = true;
+    if (dateFilter) {
+      const itemDate = i.data_hora_recebimento || i.created_date;
+      if (itemDate) {
+        const formattedItemDate = format(new Date(itemDate), 'yyyy-MM-dd');
+        dateMatch = formattedItemDate === dateFilter;
+      } else {
+        dateMatch = false;
+      }
+    }
+
     const matchSearch = i.descricao_item?.toLowerCase().includes(searchLower) ||
                        i.nome_pessoa_externa?.toLowerCase().includes(searchLower) ||
                        i.unidade?.toLowerCase().includes(searchLower) ||
                        i.bloco?.toLowerCase().includes(searchLower); // Block search
     const matchStatus = statusFilter === 'todos' || i.status === statusFilter;
-    return matchSearch && matchStatus;
+    return matchSearch && matchStatus && dateMatch;
   });
 
   // Cálculos para os contadores
@@ -566,18 +600,33 @@ _Equipe da Portaria_`;
       {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-              <Input
-                placeholder="Buscar por item, pessoa, unidade ou bloco..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+                <Input
+                  placeholder="Buscar por item, pessoa, unidade ou bloco..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="w-auto"
+                />
+                {dateFilter && (
+                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-              <TabsList className="bg-slate-100">
+              <TabsList className="bg-slate-100 w-full lg:w-auto overflow-x-auto">
                 <TabsTrigger value="todos" className="gap-2">
                   Todos
                   <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">
@@ -635,7 +684,7 @@ _Equipe da Portaria_`;
         ) : filteredItens.length === 0 ? (
           <Card className="p-8 text-center border-0 shadow-lg">
             <Package className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhum item encontrado</p>
+            <p className="text-slate-500">Nenhum item encontrado {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : (
           filteredItens.map((item: any) => (
