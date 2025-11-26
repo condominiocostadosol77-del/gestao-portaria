@@ -37,6 +37,7 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
     return (
       <input
         type={type}
+        style={{ backgroundColor: '#ffffff', color: '#000000', height: '40px', opacity: 1 }}
         className={cn("flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-black ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50", className)}
         ref={ref}
         {...props}
@@ -252,6 +253,7 @@ export const Command = ({ className, children }: any) => (
 export const CommandInput = ({ className, ...props }: any) => (
   <div className="flex items-center border-b px-3">
     <input
+      style={{ backgroundColor: '#ffffff', color: '#000000', height: '40px', opacity: 1 }}
       className={cn("flex h-11 w-full rounded-md bg-transparent py-3 text-sm text-black outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50", className)}
       {...props}
     />
