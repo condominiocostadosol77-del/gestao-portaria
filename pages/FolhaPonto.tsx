@@ -286,12 +286,16 @@ export default function FolhaPonto() {
 
   const handleExportPDF = () => {
     const funcionarioSelecionado = funcionarios.find((f: any) => f.id === funcionarioFilter);
-    const registrosFiltrados = filteredRegistros;
-
-    if (registrosFiltrados.length === 0) {
+    
+    if (filteredRegistros.length === 0) {
       alert('Nenhum registro para exportar');
       return;
     }
+
+    // Ordenar os registros por data (crescente) para o PDF
+    const registrosOrdenados = [...filteredRegistros].sort((a: any, b: any) => {
+        return new Date(a.data).getTime() - new Date(b.data).getTime();
+    });
 
     let htmlContent = `
       <html>
@@ -314,7 +318,7 @@ export default function FolhaPonto() {
           <div class="info">
             ${funcionarioSelecionado ? `<p><strong>Funcionário:</strong> ${funcionarioSelecionado.nome_completo}</p>` : ''}
             <p><strong>Data de Geração:</strong> ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}</p>
-            <p><strong>Total de Registros:</strong> ${registrosFiltrados.length}</p>
+            <p><strong>Total de Registros:</strong> ${registrosOrdenados.length}</p>
           </div>
           <table>
             <thead>
@@ -334,7 +338,7 @@ export default function FolhaPonto() {
     let totalHoras = 0;
     let totalMinutos = 0;
 
-    registrosFiltrados.forEach((r: any) => {
+    registrosOrdenados.forEach((r: any) => {
       const horas = r.hora_entrada && r.hora_saida ? (() => {
         const [h1, m1] = r.hora_entrada.split(':').map(Number);
         const [h2, m2] = r.hora_saida.split(':').map(Number);

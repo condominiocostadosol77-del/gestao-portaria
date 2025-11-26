@@ -169,8 +169,8 @@ export const SelectContent = ({ children }: any) => {
   
   return (
     <>
-      <div className="fixed inset-0 z-40" onClick={() => context.setOpen(false)} />
-      <div className="absolute z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80 w-full mt-1 max-h-64 overflow-y-auto">
+      <div className="fixed inset-0 z-[9998]" onClick={() => context.setOpen(false)} />
+      <div className="absolute z-[9999] min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md animate-in fade-in-80 w-full mt-1 max-h-64 overflow-y-auto">
         <div className="p-1">
           {children}
         </div>
@@ -235,8 +235,8 @@ export const PopoverContent = ({ className, children }: any) => {
 
   return (
     <>
-      <div className="fixed inset-0 z-40" onClick={() => context.onOpenChange(false)} />
-      <div className={cn("absolute z-50 w-full rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95 mt-1", className)}>
+      <div className="fixed inset-0 z-[9998]" onClick={() => context.onOpenChange(false)} />
+      <div className={cn("absolute z-[9999] w-full rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none animate-in fade-in-0 zoom-in-95 mt-1", className)}>
         {children}
       </div>
     </>
