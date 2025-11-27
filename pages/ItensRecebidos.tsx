@@ -129,6 +129,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
     bloco: '',
     nome_pessoa_externa: '',
     telefone_pessoa_externa: '',
+    documento_pessoa_externa: '', // Novo campo para documento
     descricao_item: '',
     quantidade: 1,
     turno: 'diurno',
@@ -203,7 +204,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
                     type="radio"
                     checked={usarMoradorCadastrado}
                     onChange={() => setUsarMoradorCadastrado(true)}
-                    className="w-4 h-4"
+                    className="w-4 h-4 accent-emerald-600"
                   />
                   <span className="text-sm font-medium text-slate-700">Selecionar morador cadastrado</span>
                 </label>
@@ -215,7 +216,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
                       setUsarMoradorCadastrado(false);
                       setFormData({ ...formData, morador_id: '' });
                     }}
-                    className="w-4 h-4"
+                    className="w-4 h-4 accent-emerald-600"
                   />
                   <span className="text-sm font-medium text-slate-700">Digitar unidade manualmente</span>
                 </label>
@@ -243,7 +244,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
                       <Command>
                         <CommandInput 
                           autoFocus
-                          placeholder="Digite o nome, unidade ou bloco..." 
+                          placeholder="Digite nome, unidade ou bloco..." 
                           value={searchQuery}
                           onChange={(e: any) => setSearchQuery(e.target.value)}
                           onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} 
@@ -317,13 +318,24 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
             </div>
 
             <div>
-              <Label htmlFor="telefone_pessoa_externa">Telefone</Label>
-              <Input
-                id="telefone_pessoa_externa"
-                value={formData.telefone_pessoa_externa}
-                onChange={(e: any) => setFormData({ ...formData, telefone_pessoa_externa: e.target.value })}
-                placeholder="(00) 00000-0000"
-              />
+              <Label htmlFor="contato_pessoa_externa">
+                {formData.tipo_operacao === 'externo_para_morador' ? 'Documento (RG/CPF)' : 'Telefone'}
+              </Label>
+              {formData.tipo_operacao === 'externo_para_morador' ? (
+                <Input
+                  id="documento_pessoa_externa"
+                  value={formData.documento_pessoa_externa || ''}
+                  onChange={(e: any) => setFormData({ ...formData, documento_pessoa_externa: e.target.value })}
+                  placeholder="RG ou CPF"
+                />
+              ) : (
+                <Input
+                  id="telefone_pessoa_externa"
+                  value={formData.telefone_pessoa_externa || ''}
+                  onChange={(e: any) => setFormData({ ...formData, telefone_pessoa_externa: e.target.value })}
+                  placeholder="(00) 00000-0000"
+                />
+              )}
             </div>
 
             <div className="md:col-span-2">
@@ -494,6 +506,7 @@ Olá, ${m.nome_completo}! 👋
 🏠 *Unidade:* ${item.unidade}${item.bloco ? ` - Bloco ${item.bloco}` : ''}
 📦 *Item:* ${item.descricao_item}
 ${item.telefone_pessoa_externa ? `📞 *Contato:* ${item.telefone_pessoa_externa}` : ''}
+${item.documento_pessoa_externa ? `📄 *Documento:* ${item.documento_pessoa_externa}` : ''}
 ${item.observacoes ? `📝 *Observações:* ${item.observacoes}` : ''}
 ⏰ *Registrado às:* ${hora}
 
@@ -747,6 +760,12 @@ _Equipe da Portaria_`;
                         <div>
                           <span className="text-slate-500">Telefone:</span>
                           <p className="font-medium text-slate-900">{item.telefone_pessoa_externa}</p>
+                        </div>
+                      )}
+                      {item.documento_pessoa_externa && (
+                        <div>
+                          <span className="text-slate-500">Documento:</span>
+                          <p className="font-medium text-slate-900">{item.documento_pessoa_externa}</p>
                         </div>
                       )}
 

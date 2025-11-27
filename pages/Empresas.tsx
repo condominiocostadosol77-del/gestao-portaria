@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -265,7 +266,8 @@ export default function Empresas() {
                 placeholder="Buscar por nome..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 !text-black"
+                className="pl-10"
+                style={{ backgroundColor: 'white', color: 'black', height: '40px' }}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -274,6 +276,7 @@ export default function Empresas() {
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
                   className="w-auto"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px' }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
