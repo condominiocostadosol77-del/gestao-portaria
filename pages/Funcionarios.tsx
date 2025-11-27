@@ -388,8 +388,8 @@ export default function Funcionarios() {
                 placeholder="Buscar por nome, CPF, cargo ou turno..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 !text-black"
-                style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
+                className="pl-10 h-12 bg-white text-black border-slate-300 shadow-sm"
+                style={{ backgroundColor: '#ffffff', color: '#000000', opacity: 1 }}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -397,8 +397,8 @@ export default function Funcionarios() {
                   type="date"
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
-                  className="w-auto !text-black"
-                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
+                  className="w-auto h-12 bg-white text-black border-slate-300 shadow-sm"
+                  style={{ backgroundColor: '#ffffff', color: '#000000', opacity: 1 }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">

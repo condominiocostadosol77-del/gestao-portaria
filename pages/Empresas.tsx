@@ -266,7 +266,7 @@ export default function Empresas() {
                 placeholder="Buscar por nome..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 !text-black"
+                className="pl-10 h-12 bg-white text-black border-slate-300 shadow-sm"
                 style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
               />
             </div>
@@ -275,7 +275,7 @@ export default function Empresas() {
                   type="date"
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
-                  className="w-auto !text-black"
+                  className="w-auto h-12 bg-white text-black border-slate-300 shadow-sm"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
