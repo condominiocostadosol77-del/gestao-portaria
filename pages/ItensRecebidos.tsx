@@ -317,6 +317,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               />
             </div>
 
+            {/* Campo dinâmico: Documento ou Telefone dependendo da operação */}
             <div>
               <Label htmlFor="contato_pessoa_externa">
                 {formData.tipo_operacao === 'externo_para_morador' ? 'Documento (RG/CPF)' : 'Telefone'}
@@ -756,6 +757,7 @@ _Equipe da Portaria_`;
                         </>
                       )}
 
+                      {/* Exibir telefone ou documento dependendo do que foi salvo/tipo */}
                       {item.telefone_pessoa_externa && (
                         <div>
                           <span className="text-slate-500">Telefone:</span>

@@ -69,6 +69,7 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
     status: 'emprestado'
   });
   const [openMorador, setOpenMorador] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleMoradorChange = (moradorId: string) => {
     const morador = moradores.find((m: any) => m.id === moradorId);
@@ -83,6 +84,17 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
       });
     }
   };
+
+  // Lógica de filtro robusta para a busca (Nome, Unidade, Bloco)
+  const filteredMoradores = moradores?.filter((m: any) => {
+    // Proteção contra valores nulos/undefined
+    const searchLower = (searchQuery || "").toLowerCase();
+    const nome = (m.nome_completo || "").toLowerCase();
+    const unidade = (m.unidade || "").toString().toLowerCase();
+    const bloco = (m.bloco || "").toLowerCase();
+    
+    return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
+  });
 
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
@@ -144,11 +156,19 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0">
                     <Command>
-                      <CommandInput placeholder="Digite o nome do morador..." onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} />
+                      <CommandInput 
+                        autoFocus
+                        placeholder="Digite nome, unidade ou bloco..." 
+                        value={searchQuery}
+                        onChange={(e: any) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }} 
+                      />
                       <CommandList>
-                        <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                        {filteredMoradores?.length === 0 && (
+                          <CommandEmpty>Nenhum morador encontrado.</CommandEmpty>
+                        )}
                         <CommandGroup>
-                          {moradores?.map((m: any) => (
+                          {filteredMoradores?.map((m: any) => (
                             <CommandItem
                               key={m.id}
                               value={`${m.nome_completo} ${m.unidade} ${m.bloco || ''}`}
@@ -370,6 +390,7 @@ export default function MateriaisEmprestados() {
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Materiais Emprestados</h1>
@@ -388,6 +409,7 @@ export default function MateriaisEmprestados() {
         </Button>
       </div>
 
+      {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex flex-col gap-4">
@@ -398,7 +420,8 @@ export default function MateriaisEmprestados() {
                   placeholder="Buscar por material, unidade, bloco, pessoa ou documento..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -406,7 +429,8 @@ export default function MateriaisEmprestados() {
                   type="date"
                   value={dateFilter}
                   onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-auto"
+                  className="w-auto !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
