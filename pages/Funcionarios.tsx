@@ -84,6 +84,25 @@ function FuncionarioForm({ funcionario, onSubmit, onCancel }: any) {
     }
   };
 
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
+    // Validação básica manual
+    if (!formData.nome_completo) {
+      alert("Por favor, preencha o Nome Completo.");
+      return;
+    }
+
+    // Tratamento de dados antes de enviar
+    const dataToSubmit = {
+      ...formData,
+      // Converte string vazia de data para null para evitar erro no banco
+      data_admissao: formData.data_admissao === '' ? null : formData.data_admissao
+    };
+
+    onSubmit(dataToSubmit);
+  };
+
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
       <CardHeader className="border-b">
@@ -95,7 +114,7 @@ function FuncionarioForm({ funcionario, onSubmit, onCancel }: any) {
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Label>Foto do Funcionário</Label>
@@ -266,7 +285,11 @@ function FuncionarioForm({ funcionario, onSubmit, onCancel }: any) {
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700">
+            <Button 
+              type="button" 
+              onClick={() => handleSubmit()}
+              className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
+            >
               <Save className="h-4 w-4 mr-2" />
               {funcionario ? 'Salvar' : 'Cadastrar'}
             </Button>
@@ -389,7 +412,7 @@ export default function Funcionarios() {
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
                 className="pl-10 h-12 bg-white text-black border-slate-300 shadow-sm"
-                style={{ backgroundColor: '#ffffff', color: '#000000', opacity: 1 }}
+                style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -398,7 +421,7 @@ export default function Funcionarios() {
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
                   className="w-auto h-12 bg-white text-black border-slate-300 shadow-sm"
-                  style={{ backgroundColor: '#ffffff', color: '#000000', opacity: 1 }}
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
