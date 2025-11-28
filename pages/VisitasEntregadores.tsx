@@ -91,6 +91,14 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
     return nomeMatch || cpfMatch || rgMatch;
   });
 
+  const handleSubmit = () => {
+    if (!formData.entregador_id) {
+      alert("Selecione um entregador.");
+      return;
+    }
+    onSubmit(formData);
+  };
+
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
       <CardHeader className="border-b">
@@ -102,7 +110,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Entregador */}
             <div className="md:col-span-2">
@@ -174,7 +182,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
               <Label htmlFor="empresa">Empresa</Label>
               <Select 
                 value={formData.empresa_id} 
-                onValueChange={(value) => {
+                onValueChange={(value: string) => {
                   const empresa = empresas?.find((e: any) => e.id === value);
                   setFormData({ 
                     ...formData, 
@@ -206,7 +214,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
                 type="number"
                 min="1"
                 value={formData.quantidade_encomendas}
-                onChange={(e) => setFormData({ ...formData, quantidade_encomendas: parseInt(e.target.value) })}
+                onChange={(e: any) => setFormData({ ...formData, quantidade_encomendas: parseInt(e.target.value) })}
                 required
               />
             </div>
@@ -216,7 +224,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
               <Label htmlFor="turno">Turno</Label>
               <Select 
                 value={formData.turno} 
-                onValueChange={(value) => setFormData({ ...formData, turno: value })}
+                onValueChange={(value: string) => setFormData({ ...formData, turno: value })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -234,7 +242,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
               <Textarea
                 id="observacoes"
                 value={formData.observacoes}
-                onChange={(e) => setFormData({ ...formData, observacoes: e.target.value })}
+                onChange={(e: any) => setFormData({ ...formData, observacoes: e.target.value })}
                 placeholder="Informações adicionais sobre a visita..."
                 rows={3}
               />
@@ -245,7 +253,11 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+            <Button 
+              type="button" 
+              onClick={handleSubmit}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+            >
               <Save className="h-4 w-4 mr-2" />
               {visita ? 'Salvar' : 'Registrar'}
             </Button>
@@ -415,16 +427,18 @@ export default function VisitasEntregadores() {
                 <Input
                   placeholder="Buscar por entregador, empresa ou documento..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  onChange={(e: any) => setSearchTerm(e.target.value)}
+                  className="pl-10 !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
               </div>
               <div className="flex items-center gap-2">
                 <Input
                   type="date"
                   value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-auto"
+                  onChange={(e: any) => setDateFilter(e.target.value)}
+                  className="w-auto !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
@@ -522,10 +536,10 @@ export default function VisitasEntregadores() {
                         }}
                         size="sm"
                         variant="outline"
-                      >
+                        >
                         Editar
                       </Button>
-                      <DeleteAction onConfirm={() => deleteMutation.mutate(visita.id)} />
+                      <DeleteAction onConfirm={() => handleDelete(visita)} />
                     </div>
                   </div>
                 </div>

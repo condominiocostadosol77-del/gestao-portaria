@@ -62,6 +62,14 @@ function EmpresaForm({ empresa, onSubmit, onCancel }: any) {
     status: 'ativa'
   });
 
+  const handleSubmit = () => {
+    if (!formData.nome) {
+      alert("O nome da empresa é obrigatório.");
+      return;
+    }
+    onSubmit(formData);
+  };
+
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
       <CardHeader className="border-b">
@@ -73,7 +81,7 @@ function EmpresaForm({ empresa, onSubmit, onCancel }: any) {
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Label htmlFor="nome">Nome da Empresa *</Label>
@@ -147,7 +155,11 @@ function EmpresaForm({ empresa, onSubmit, onCancel }: any) {
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700">
+            <Button 
+              type="button" 
+              onClick={handleSubmit}
+              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+            >
               <Save className="h-4 w-4 mr-2" />
               {empresa ? 'Salvar' : 'Cadastrar'}
             </Button>
@@ -266,7 +278,7 @@ export default function Empresas() {
                 placeholder="Buscar por nome..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 bg-white text-black border-slate-300 shadow-sm"
+                className="pl-10 !text-black"
                 style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
               />
             </div>
@@ -275,7 +287,7 @@ export default function Empresas() {
                   type="date"
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
-                  className="w-auto h-12 bg-white text-black border-slate-300 shadow-sm"
+                  className="w-auto !text-black"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (

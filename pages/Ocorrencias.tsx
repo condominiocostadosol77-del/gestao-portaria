@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -85,6 +86,14 @@ function OcorrenciaForm({ ocorrencia, onSubmit, onCancel }: any) {
     });
   };
 
+  const handleSubmit = () => {
+    if (!formData.relato) {
+      alert("O campo relato é obrigatório.");
+      return;
+    }
+    onSubmit(formData);
+  };
+
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
       <CardHeader className="border-b">
@@ -96,7 +105,7 @@ function OcorrenciaForm({ ocorrencia, onSubmit, onCancel }: any) {
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <Label htmlFor="funcionario_saindo">Funcionário Saindo</Label>
@@ -157,7 +166,11 @@ function OcorrenciaForm({ ocorrencia, onSubmit, onCancel }: any) {
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700">
+            <Button 
+              type="button" 
+              onClick={handleSubmit}
+              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+            >
               <Save className="h-4 w-4 mr-2" />
               {ocorrencia ? 'Salvar' : 'Registrar'}
             </Button>
@@ -247,6 +260,7 @@ export default function Ocorrencias() {
               value={searchTerm}
               onChange={(e: any) => setSearchTerm(e.target.value)}
               className="pl-10 !text-black"
+              style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
             />
           </div>
         </CardContent>

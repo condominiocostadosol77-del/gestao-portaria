@@ -96,6 +96,14 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
     return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
   });
 
+  const handleSubmit = () => {
+    if (!formData.material) {
+      alert("O nome do material é obrigatório.");
+      return;
+    }
+    onSubmit(formData);
+  };
+
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
       <CardHeader className="border-b">
@@ -107,7 +115,7 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Label htmlFor="material">Material *</Label>
@@ -267,7 +275,8 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
               Cancelar
             </Button>
             <Button 
-              type="submit"
+              type="button" 
+              onClick={handleSubmit}
               className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
             >
               <Save className="h-4 w-4 mr-2" />
@@ -419,7 +428,7 @@ export default function MateriaisEmprestados() {
                 <Input
                   placeholder="Buscar por material, unidade, bloco, pessoa ou documento..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e: any) => setSearchTerm(e.target.value)}
                   className="pl-10 !text-black"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
@@ -428,7 +437,7 @@ export default function MateriaisEmprestados() {
                 <Input
                   type="date"
                   value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
+                  onChange={(e: any) => setDateFilter(e.target.value)}
                   className="w-auto !text-black"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />

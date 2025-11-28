@@ -163,6 +163,14 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
     return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
   });
 
+  const handleSubmit = (notificar: boolean) => {
+    if (!formData.unidade) {
+        alert("A unidade é obrigatória.");
+        return;
+    }
+    onSubmit(formData, notificar);
+  };
+
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
       <CardHeader className="border-b">
@@ -174,7 +182,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Label htmlFor="tipo_operacao">Tipo de Operação *</Label>
@@ -384,7 +392,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
             </Button>
             <Button 
               type="button"
-              onClick={() => onSubmit(formData, false)}
+              onClick={() => handleSubmit(false)}
               className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
             >
               <Save className="h-4 w-4 mr-2" />
@@ -393,7 +401,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
             {!item && (
               <Button 
                 type="button"
-                onClick={() => onSubmit(formData, true)}
+                onClick={() => handleSubmit(true)}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
                 <Save className="h-4 w-4 mr-2" />
@@ -622,7 +630,8 @@ _Equipe da Portaria_`;
                   placeholder="Buscar por item, pessoa, unidade ou bloco..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
               </div>
               <div className="flex items-center gap-2">
@@ -630,7 +639,8 @@ _Equipe da Portaria_`;
                   type="date"
                   value={dateFilter}
                   onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-auto"
+                  className="w-auto !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">

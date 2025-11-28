@@ -16,7 +16,9 @@ import {
   ChevronsUpDown,
   Trash2,
   AlertTriangle,
-  CalendarIcon
+  ArrowLeft,
+  ChevronRight,
+  Box
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '../lib/utils';
@@ -154,7 +156,6 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
     }
   };
 
-  // Lógica de filtro robusta para a busca (Nome, Unidade, Bloco)
   const filteredMoradores = moradores?.filter((m: any) => {
     const searchLower = (searchQuery || "").toLowerCase();
     const nome = (m.nome_completo || "").toLowerCase();
@@ -163,6 +164,14 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
     
     return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
   });
+
+  const handleSubmit = (notificar: boolean) => {
+    if (!formData.unidade) {
+      alert("A unidade é obrigatória.");
+      return;
+    }
+    onSubmit(formData, notificar);
+  };
 
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
@@ -224,7 +233,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
                       <Command>
                         <CommandInput 
                           autoFocus
-                          placeholder="Digite nome, unidade ou bloco..." 
+                          placeholder="Digite o nome ou unidade..." 
                           value={searchQuery}
                           onChange={(e: any) => setSearchQuery(e.target.value)}
                           onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }}
@@ -396,7 +405,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
             </Button>
             <Button 
               type="button" 
-              onClick={() => onSubmit(formData, false)}
+              onClick={() => handleSubmit(false)}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
               <Save className="h-4 w-4 mr-2" />
@@ -405,7 +414,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
             {!encomenda && (
               <Button 
                 type="button"
-                onClick={() => onSubmit(formData, true)}
+                onClick={() => handleSubmit(true)}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
               >
                 <Save className="h-4 w-4 mr-2" />
@@ -423,9 +432,10 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
 export default function Encomendas() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('todos');
+  const [statusFilter, setStatusFilter] = useState('aguardando_retirada'); // Padrão pendentes
   const [showForm, setShowForm] = useState(false);
   const [editingEncomenda, setEditingEncomenda] = useState<any>(null);
+  const [selectedUnitGroup, setSelectedUnitGroup] = useState<string | null>(null); // State para grupo selecionado
   const queryClient = useQueryClient();
 
   const { data: encomendas = [], isLoading } = useQuery({
@@ -454,7 +464,6 @@ export default function Encomendas() {
   const enviarWhatsApp = (encomenda: any, morador: any) => {
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     
-    // Buscar todos os moradores da mesma unidade e bloco se não houver morador específico
     let destinatarios = [];
     if (morador) {
       destinatarios = [morador];
@@ -559,7 +568,7 @@ _Equipe da Portaria_`;
     const moradorNome = getMoradorNome(e)?.toLowerCase() || '';
     const searchLower = searchTerm.toLowerCase();
     
-    // Date filter logic
+    // Date filter
     let dateMatch = true;
     if (dateFilter) {
       const itemDate = e.data_hora_recebimento || e.created_date;
@@ -580,6 +589,23 @@ _Equipe da Portaria_`;
     const matchStatus = statusFilter === 'todos' || e.status === statusFilter;
     return matchSearch && matchStatus && dateMatch;
   });
+
+  // Grouping logic for pending tab
+  const getGroupKey = (e: any) => {
+    const bloco = e.bloco ? ` - Bloco ${e.bloco}` : '';
+    return `Unidade ${e.unidade}${bloco}`;
+  };
+
+  const pendingGroups = React.useMemo(() => {
+    if (statusFilter !== 'aguardando_retirada') return {};
+    
+    return filteredEncomendas.reduce((acc: any, curr: any) => {
+      const key = getGroupKey(curr);
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(curr);
+      return acc;
+    }, {});
+  }, [filteredEncomendas, statusFilter]);
 
   const getStatusBadge = (status: string) => {
     const configs: any = {
@@ -616,6 +642,11 @@ _Equipe da Portaria_`;
     return <Package className="h-5 w-5 text-purple-600" />;
   };
 
+  // Determine what to render based on grouping state
+  const itemsToRender = (statusFilter === 'aguardando_retirada' && selectedUnitGroup)
+    ? filteredEncomendas.filter((e: any) => getGroupKey(e) === selectedUnitGroup)
+    : filteredEncomendas;
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       {/* Header */}
@@ -640,33 +671,36 @@ _Equipe da Portaria_`;
       {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-                <Input
-                  placeholder="Buscar por nome, unidade, bloco, remetente..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+              <Input
+                placeholder="Buscar por nome, unidade, bloco, remetente..."
+                value={searchTerm}
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                className="pl-10 !text-black"
+                style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
+              />
+            </div>
+            <div className="flex items-center gap-2">
                 <Input
                   type="date"
                   value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-auto"
+                  onChange={(e: any) => setDateFilter(e.target.value)}
+                  className="w-auto !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
                     <X className="h-4 w-4" />
                   </Button>
                 )}
-              </div>
             </div>
-            <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-              <TabsList className="bg-slate-100 w-full lg:w-auto overflow-x-auto">
+            <Tabs value={statusFilter} onValueChange={(val) => {
+              setStatusFilter(val);
+              setSelectedUnitGroup(null); // Reset group selection on tab change
+            }}>
+              <TabsList className="bg-slate-100">
                 <TabsTrigger value="todos" className="gap-2">
                   Todos
                   <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">
@@ -724,102 +758,159 @@ _Equipe da Portaria_`;
           <Card className="p-8 text-center">
             <p className="text-slate-500">Carregando...</p>
           </Card>
-        ) : filteredEncomendas.length === 0 ? (
-          <Card className="p-8 text-center border-0 shadow-lg">
-            <Package className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-            <p className="text-slate-500">Nenhuma encomenda encontrada {dateFilter ? 'nesta data' : ''}</p>
-          </Card>
         ) : (
-          filteredEncomendas.map((encomenda: any) => (
-            <Card key={encomenda.id} className="border-0 shadow-lg hover:shadow-xl transition-all bg-white/80 backdrop-blur-sm">
-              <CardContent className="p-6">
-                <div className="flex flex-col lg:flex-row gap-6">
-                  {/* Ícone/Foto */}
-                  <div className="flex-shrink-0">
-                    <div className={`h-24 w-24 rounded-xl flex items-center justify-center ${
-                      encomenda.tipo === 'correspondencia' || encomenda.tipo === 'documento' 
-                        ? 'bg-blue-100' 
-                        : 'bg-purple-100'
-                    }`}>
-                      {getTipoIcon(encomenda.tipo)}
-                    </div>
-                  </div>
-
-                  {/* Info */}
-                  <div className="flex-1 space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
-                      <div>
-                        <h3 className="text-xl font-bold text-slate-900">
-                          Unidade {encomenda.unidade}{encomenda.bloco ? ` - Bloco ${encomenda.bloco}` : ''}
-                        </h3>
-                        {getMoradorNome(encomenda) && (
-                          <p className="text-slate-700 font-medium">Morador: {getMoradorNome(encomenda)}</p>
-                        )}
-                        {encomenda.remetente && (
-                          <p className="text-slate-600">Remetente: {encomenda.remetente}</p>
-                        )}
-                      </div>
-                      {getStatusBadge(encomenda.status)}
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-                      <div>
-                        <span className="text-slate-500">Tipo:</span>
-                        <p className="font-medium text-slate-900 capitalize">
-                          {encomenda.tipo}
-                        </p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Código Retirada:</span>
-                        <p className="font-mono font-bold text-lg text-blue-600">
-                          {encomenda.codigo_retirada}
-                        </p>
-                      </div>
-                      {encomenda.data_hora_recebimento && (
+          <>
+            {/* View for Pending Tab with Groups */}
+            {statusFilter === 'aguardando_retirada' && !selectedUnitGroup ? (
+              Object.keys(pendingGroups).length === 0 ? (
+                <Card className="p-8 text-center border-0 shadow-lg">
+                  <Package className="h-12 w-12 mx-auto text-slate-300 mb-3" />
+                  <p className="text-slate-500">Nenhuma encomenda pendente encontrada</p>
+                </Card>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.entries(pendingGroups).map(([key, groupItems]: [string, any]) => (
+                    <Card 
+                      key={key} 
+                      className="border-0 shadow-md hover:shadow-xl transition-all cursor-pointer bg-white/90 backdrop-blur-sm border-l-4 border-l-orange-400 group"
+                      onClick={() => setSelectedUnitGroup(key)}
+                    >
+                      <CardContent className="p-6 flex items-center justify-between">
                         <div>
-                          <span className="text-slate-500">Recebido em:</span>
-                          <p className="font-medium text-slate-900">
-                            {format(new Date(encomenda.data_hora_recebimento), 'dd/MM/yyyy HH:mm')}
+                          <h3 className="text-lg font-bold text-slate-900 group-hover:text-purple-700 transition-colors">
+                            {key}
+                          </h3>
+                          <p className="text-slate-500 mt-1">
+                            {groupItems.length} {groupItems.length === 1 ? 'encomenda pendente' : 'encomendas pendentes'}
                           </p>
                         </div>
-                      )}
-                      {encomenda.data_hora_retirada && (
-                        <div>
-                          <span className="text-slate-500">Retirado em:</span>
-                          <p className="font-medium text-slate-900">
-                            {format(new Date(encomenda.data_hora_retirada), 'dd/MM/yyyy HH:mm')}
-                          </p>
+                        <div className="bg-orange-50 p-3 rounded-full group-hover:bg-purple-50 transition-colors">
+                          <ChevronRight className="h-6 w-6 text-orange-400 group-hover:text-purple-600" />
                         </div>
-                      )}
-                    </div>
-
-                    {encomenda.descricao && (
-                      <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
-                        {encomenda.descricao}
-                      </p>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2 pt-2">
-                      {encomenda.status === 'aguardando_retirada' && (
-                        <RetiradaAction 
-                          encomanda={encomenda} 
-                          onConfirm={registrarRetirada} 
-                        />
-                      )}
-                      <DeleteAction onConfirm={() => deleteMutation.mutate(encomenda.id)} />
-                    </div>
-
-                    {encomenda.quem_recebeu && (
-                      <p className="text-sm text-slate-600">
-                        Retirado por: <span className="font-medium">{encomenda.quem_recebeu}</span>
-                      </p>
-                    )}
-                  </div>
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
-              </CardContent>
-            </Card>
-          ))
+              )
+            ) : (
+              /* View for Details List (Pending Selected or All/Retiradas) */
+              <>
+                {statusFilter === 'aguardando_retirada' && selectedUnitGroup && (
+                  <div className="flex items-center mb-4">
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => setSelectedUnitGroup(null)}
+                      className="text-slate-600 hover:text-slate-900 gap-2 pl-0"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                      Voltar para lista agrupada
+                    </Button>
+                    <h2 className="text-lg font-semibold text-slate-800 ml-2 border-l pl-4 border-slate-300">
+                      {selectedUnitGroup}
+                    </h2>
+                  </div>
+                )}
+
+                {itemsToRender.length === 0 ? (
+                  <Card className="p-8 text-center border-0 shadow-lg">
+                    <Package className="h-12 w-12 mx-auto text-slate-300 mb-3" />
+                    <p className="text-slate-500">Nenhuma encomenda encontrada</p>
+                  </Card>
+                ) : (
+                  itemsToRender.map((encomenda: any) => (
+                    <Card key={encomenda.id} className="border-0 shadow-lg hover:shadow-xl transition-all bg-white/80 backdrop-blur-sm">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col lg:flex-row gap-6">
+                          {/* Ícone/Foto */}
+                          <div className="flex-shrink-0">
+                            <div className={`h-24 w-24 rounded-xl flex items-center justify-center ${
+                              encomenda.tipo === 'correspondencia' || encomenda.tipo === 'documento' 
+                                ? 'bg-blue-100' 
+                                : 'bg-purple-100'
+                            }`}>
+                              {getTipoIcon(encomenda.tipo)}
+                            </div>
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 space-y-3">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2">
+                              <div>
+                                <h3 className="text-xl font-bold text-slate-900">
+                                  Unidade {encomenda.unidade}{encomenda.bloco ? ` - Bloco ${encomenda.bloco}` : ''}
+                                </h3>
+                                {getMoradorNome(encomenda) && (
+                                  <p className="text-slate-700 font-medium">Morador: {getMoradorNome(encomenda)}</p>
+                                )}
+                                {encomenda.remetente && (
+                                  <p className="text-slate-600">Remetente: {encomenda.remetente}</p>
+                                )}
+                              </div>
+                              {getStatusBadge(encomenda.status)}
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                              <div>
+                                <span className="text-slate-500">Tipo:</span>
+                                <p className="font-medium text-slate-900 capitalize">
+                                  {encomenda.tipo}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-slate-500">Código Retirada:</span>
+                                <p className="font-mono font-bold text-lg text-blue-600">
+                                  {encomenda.codigo_retirada}
+                                </p>
+                              </div>
+                              {encomenda.data_hora_recebimento && (
+                                <div>
+                                  <span className="text-slate-500">Recebido em:</span>
+                                  <p className="font-medium text-slate-900">
+                                    {format(new Date(encomenda.data_hora_recebimento), 'dd/MM/yyyy HH:mm')}
+                                  </p>
+                                </div>
+                              )}
+                              {encomenda.data_hora_retirada && (
+                                <div>
+                                  <span className="text-slate-500">Retirado em:</span>
+                                  <p className="font-medium text-slate-900">
+                                    {format(new Date(encomenda.data_hora_retirada), 'dd/MM/yyyy HH:mm')}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+
+                            {encomenda.descricao && (
+                              <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
+                                {encomenda.descricao}
+                              </p>
+                            )}
+
+                            {/* Actions */}
+                            <div className="flex flex-wrap gap-2 pt-2">
+                              {encomenda.status === 'aguardando_retirada' && (
+                                <RetiradaAction 
+                                  encomanda={encomenda} 
+                                  onConfirm={registrarRetirada} 
+                                />
+                              )}
+                              <DeleteAction onConfirm={() => deleteMutation.mutate(encomenda.id)} />
+                            </div>
+
+                            {encomenda.quem_recebeu && (
+                              <p className="text-sm text-slate-600">
+                                Retirado por: <span className="font-medium">{encomenda.quem_recebeu}</span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))
+                )}
+              </>
+            )}
+          </>
         )}
       </div>
     </div>

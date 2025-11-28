@@ -94,6 +94,14 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
     return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
   });
 
+  const handleSubmit = () => {
+    if (!formData.nome) {
+      alert("O nome do visitante é obrigatório.");
+      return;
+    }
+    onSubmit(formData);
+  };
+
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
       <CardHeader className="border-b">
@@ -105,7 +113,7 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Label htmlFor="nome">Nome do Visitante *</Label>
@@ -262,7 +270,8 @@ function VisitanteForm({ visitante, moradores, onSubmit, onCancel }: any) {
               Cancelar
             </Button>
             <Button 
-              type="submit"
+              type="button" 
+              onClick={handleSubmit}
               className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700"
             >
               <Save className="h-4 w-4 mr-2" />
@@ -412,30 +421,30 @@ export default function Visitantes() {
       {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="flex flex-col gap-4">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-                <Input
-                  placeholder="Buscar por nome, documento, unidade ou morador..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <div className="flex items-center gap-2">
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+              <Input
+                placeholder="Buscar por nome, documento, unidade ou morador..."
+                value={searchTerm}
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                className="pl-10 !text-black"
+                style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
+              />
+            </div>
+            <div className="flex items-center gap-2">
                 <Input
                   type="date"
                   value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
-                  className="w-auto"
+                  onChange={(e: any) => setDateFilter(e.target.value)}
+                  className="w-auto !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
                     <X className="h-4 w-4" />
                   </Button>
                 )}
-              </div>
             </div>
             <Tabs value={statusFilter} onValueChange={setStatusFilter}>
               <TabsList className="bg-slate-100">

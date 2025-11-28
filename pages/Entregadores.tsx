@@ -63,6 +63,14 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
     observacoes: ''
   });
 
+  const handleSubmit = () => {
+    if (!formData.nome_completo) {
+      alert("O nome completo é obrigatório.");
+      return;
+    }
+    onSubmit(formData);
+  };
+
   return (
     <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm mb-6">
       <CardHeader className="border-b">
@@ -74,7 +82,7 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
+        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Nome */}
             <div className="md:col-span-2">
@@ -175,7 +183,11 @@ function EntregadorForm({ entregador, empresas, onSubmit, onCancel }: any) {
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button type="submit" className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700">
+            <Button 
+              type="button" 
+              onClick={handleSubmit}
+              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+            >
               <Save className="h-4 w-4 mr-2" />
               {entregador ? 'Salvar' : 'Cadastrar'}
             </Button>
@@ -293,7 +305,7 @@ export default function Entregadores() {
                 placeholder="Buscar por nome, empresa, CPF ou RG..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 bg-white text-black border-slate-300 shadow-sm"
+                className="pl-10 !text-black"
                 style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
               />
             </div>
@@ -302,7 +314,7 @@ export default function Entregadores() {
                   type="date"
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
-                  className="w-auto h-12 bg-white text-black border-slate-300 shadow-sm"
+                  className="w-auto !text-black"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
