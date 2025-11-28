@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { base44 } from '../api/base44Client';
@@ -15,13 +16,16 @@ import {
   Building2,
   User,
   KeyRound,
-  ShieldAlert
+  ShieldAlert,
+  Lock
 } from 'lucide-react';
-import { Button, Card, CardContent, CardHeader, CardTitle, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Popover, PopoverContent, PopoverTrigger } from './ui';
+import { Button, Card, CardContent, CardHeader, CardTitle, Label, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Popover, PopoverContent, PopoverTrigger, Input } from './ui';
 
 // --- Componente de Login/Início de Turno ---
 function ShiftLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   const [selectedFuncionario, setSelectedFuncionario] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   
   const { data: funcionarios = [], isLoading } = useQuery({
     queryKey: ['funcionarios'],
@@ -29,7 +33,18 @@ function ShiftLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
   });
 
   const handleStartShift = async () => {
-    if (!selectedFuncionario) return;
+    setError('');
+    
+    if (!selectedFuncionario) {
+      setError('Selecione um funcionário.');
+      return;
+    }
+
+    // Validação da Senha Padrão
+    if (password !== 'cond@30') {
+      setError('Senha incorreta. Tente novamente.');
+      return;
+    }
     
     const func = funcionarios.find((f: any) => f.id === selectedFuncionario);
     if (func) {
@@ -61,7 +76,7 @@ function ShiftLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
           ) : (
             <>
               {funcionariosAtivos.length > 0 ? (
-                <>
+                <div className="space-y-4">
                   <div className="space-y-2">
                     <Label>Quem está assumindo o posto?</Label>
                     <Select value={selectedFuncionario} onValueChange={setSelectedFuncionario}>
@@ -78,16 +93,38 @@ function ShiftLogin({ onLoginSuccess }: { onLoginSuccess: () => void }) {
                     </Select>
                   </div>
 
+                  <div className="space-y-2">
+                    <Label>Senha de Acesso</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Input 
+                        type="password" 
+                        placeholder="Digite a senha padrão"
+                        className="pl-10 h-12"
+                        value={password}
+                        onChange={(e: any) => setPassword(e.target.value)}
+                        onKeyDown={(e: any) => e.key === 'Enter' && handleStartShift()}
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md flex items-center gap-2">
+                      <AlertCircle className="h-4 w-4" />
+                      {error}
+                    </div>
+                  )}
+
                   <Button 
                     type="button"
                     onClick={handleStartShift} 
                     className="w-full h-12 text-lg bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg"
-                    disabled={!selectedFuncionario}
+                    disabled={!selectedFuncionario || !password}
                   >
                     <KeyRound className="mr-2 h-5 w-5" />
                     Iniciar Plantão
                   </Button>
-                </>
+                </div>
               ) : (
                 <div className="space-y-4">
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
