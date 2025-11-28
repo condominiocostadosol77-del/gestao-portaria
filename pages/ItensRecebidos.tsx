@@ -13,12 +13,17 @@ function RetiradaAction({ item, onConfirm }: { item: any, onConfirm: (id: string
   const [nome, setNome] = useState('');
   const [documento, setDocumento] = useState('');
 
-  const handleConfirm = () => {
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
     if (nome.trim()) {
       onConfirm(item.id, nome, documento);
       setOpen(false);
       setNome('');
       setDocumento('');
+    } else {
+      alert("Por favor, informe quem retirou.");
     }
   };
 
@@ -29,13 +34,16 @@ function RetiradaAction({ item, onConfirm }: { item: any, onConfirm: (id: string
           type="button"
           size="sm"
           className="bg-green-600 hover:bg-green-700 text-white"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
         >
           <CheckCircle2 className="h-4 w-4 mr-1" />
           Registrar Retirada
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 bottom-full mb-2" align="end">
+      <PopoverContent className="w-80 bottom-full mb-2" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Confirmar Retirada</h4>
@@ -52,6 +60,7 @@ function RetiradaAction({ item, onConfirm }: { item: any, onConfirm: (id: string
                 onChange={(e: any) => setNome(e.target.value)}
                 className="h-8"
                 autoFocus
+                onClick={(e: any) => e.stopPropagation()}
               />
             </div>
             <div className="grid gap-2">
@@ -62,9 +71,15 @@ function RetiradaAction({ item, onConfirm }: { item: any, onConfirm: (id: string
                 onChange={(e: any) => setDocumento(e.target.value)}
                 className="h-8"
                 placeholder="Opcional"
+                onClick={(e: any) => e.stopPropagation()}
               />
             </div>
-            <Button onClick={handleConfirm} size="sm" className="w-full mt-2">
+            <Button 
+              type="button"
+              onClick={handleConfirm} 
+              size="sm" 
+              className="w-full mt-2"
+            >
               Confirmar
             </Button>
           </div>
@@ -85,13 +100,16 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
           type="button"
           size="sm"
           variant="destructive"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
         >
           <Trash2 className="h-4 w-4 mr-1" />
           Excluir
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 bottom-full mb-2" align="end">
+      <PopoverContent className="w-64 bottom-full mb-2" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none flex items-center gap-2 text-red-600">
@@ -182,7 +200,7 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Label htmlFor="tipo_operacao">Tipo de Operação *</Label>
@@ -638,7 +656,7 @@ _Equipe da Portaria_`;
                 <Input
                   type="date"
                   value={dateFilter}
-                  onChange={(e) => setDateFilter(e.target.value)}
+                  onChange={(e: any) => setDateFilter(e.target.value)}
                   className="w-auto !text-black"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />

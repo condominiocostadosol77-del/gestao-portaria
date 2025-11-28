@@ -18,13 +18,16 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
           type="button"
           size="sm"
           variant="destructive"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
         >
           <Trash2 className="h-4 w-4 mr-1" />
           Excluir
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 bottom-full mb-2" align="end">
+      <PopoverContent className="w-64 bottom-full mb-2" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none flex items-center gap-2 text-red-600">
@@ -115,7 +118,7 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <Label htmlFor="material">Material *</Label>
@@ -275,8 +278,7 @@ function MaterialEmprestadoForm({ material, moradores, onSubmit, onCancel }: any
               Cancelar
             </Button>
             <Button 
-              type="button" 
-              onClick={handleSubmit}
+              type="submit"
               className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
             >
               <Save className="h-4 w-4 mr-2" />
@@ -339,14 +341,17 @@ export default function MateriaisEmprestados() {
   });
 
   const registrarDevolucao = async (material: any) => {
-    await updateMutation.mutateAsync({
-      id: material.id,
-      data: {
-        ...material,
-        status: 'devolvido',
-        data_hora_devolucao: new Date().toISOString()
-      }
-    });
+    // Basic confirmation dialog if needed, or rely on just the button click
+    if (window.confirm("Confirmar devolução deste item?")) {
+        await updateMutation.mutateAsync({
+        id: material.id,
+        data: {
+            ...material,
+            status: 'devolvido',
+            data_hora_devolucao: new Date().toISOString()
+        }
+        });
+    }
   };
 
   const filteredMateriais = materiais.filter((m: any) => {

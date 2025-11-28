@@ -28,11 +28,16 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState('');
 
-  const handleConfirm = () => {
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent accidental form submission if inside a form
+    e.stopPropagation(); // Stop bubbling
+    
     if (nome.trim()) {
       onConfirm(encomanda.id, nome);
       setOpen(false);
       setNome('');
+    } else {
+      alert("Por favor, informe quem retirou.");
     }
   };
 
@@ -43,13 +48,16 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
           type="button"
           size="sm"
           className="bg-green-600 hover:bg-green-700 text-white"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
         >
           <CheckCircle2 className="h-4 w-4 mr-1" />
           Registrar Retirada
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 bottom-full mb-2" align="end">
+      <PopoverContent className="w-80 bottom-full mb-2" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Confirmar Retirada</h4>
@@ -66,9 +74,15 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
                 onChange={(e: any) => setNome(e.target.value)}
                 className="col-span-2 h-8"
                 autoFocus
+                onClick={(e: any) => e.stopPropagation()}
               />
             </div>
-            <Button onClick={handleConfirm} size="sm" className="w-full mt-2">
+            <Button 
+              type="button" 
+              onClick={handleConfirm} 
+              size="sm" 
+              className="w-full mt-2"
+            >
               Confirmar
             </Button>
           </div>
@@ -89,13 +103,16 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
           type="button"
           size="sm"
           variant="destructive"
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
         >
           <Trash2 className="h-4 w-4 mr-1" />
           Excluir
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 bottom-full mb-2" align="end">
+      <PopoverContent className="w-64 bottom-full mb-2" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none flex items-center gap-2 text-red-600">
@@ -157,6 +174,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
   };
 
   const filteredMoradores = moradores?.filter((m: any) => {
+    // Proteção contra valores nulos/undefined
     const searchLower = (searchQuery || "").toLowerCase();
     const nome = (m.nome_completo || "").toLowerCase();
     const unidade = (m.unidade || "").toString().toLowerCase();
@@ -677,7 +695,7 @@ _Equipe da Portaria_`;
               <Input
                 placeholder="Buscar por nome, unidade, bloco, remetente..."
                 value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 !text-black"
                 style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
               />
@@ -765,7 +783,7 @@ _Equipe da Portaria_`;
               Object.keys(pendingGroups).length === 0 ? (
                 <Card className="p-8 text-center border-0 shadow-lg">
                   <Package className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-                  <p className="text-slate-500">Nenhuma encomenda pendente encontrada</p>
+                  <p className="text-slate-500">Nenhuma encomenda pendente encontrada {dateFilter ? 'nesta data' : ''}</p>
                 </Card>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -798,6 +816,7 @@ _Equipe da Portaria_`;
                 {statusFilter === 'aguardando_retirada' && selectedUnitGroup && (
                   <div className="flex items-center mb-4">
                     <Button 
+                      type="button"
                       variant="ghost" 
                       onClick={() => setSelectedUnitGroup(null)}
                       className="text-slate-600 hover:text-slate-900 gap-2 pl-0"
