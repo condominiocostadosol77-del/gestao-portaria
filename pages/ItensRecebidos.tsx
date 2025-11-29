@@ -343,7 +343,6 @@ function ItemRecebidoForm({ item, moradores, onSubmit, onCancel }: any) {
               />
             </div>
 
-            {/* Campo dinâmico: Documento ou Telefone dependendo da operação */}
             <div>
               <Label htmlFor="contato_pessoa_externa">
                 {formData.tipo_operacao === 'externo_para_morador' ? 'Documento (RG/CPF)' : 'Telefone'}
@@ -647,7 +646,7 @@ _Equipe da Portaria_`;
                 <Input
                   placeholder="Buscar por item, pessoa, unidade ou bloco..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={(e: any) => setSearchTerm(e.target.value)}
                   className="pl-10 !text-black"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
