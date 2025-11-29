@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { base44 } from '../api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Textarea, Label, Popover, PopoverContent, PopoverTrigger } from '../components/ui';
-import { Plus, Search, FileText, Clock, ArrowRightLeft, X, Save, Trash2, AlertTriangle } from 'lucide-react';
+import { Plus, Search, FileText, Clock, ArrowRightLeft, X, Save, Trash2, AlertTriangle, StickyNote, PenLine } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -50,6 +50,73 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
         </div>
       </PopoverContent>
     </Popover>
+  );
+}
+
+// --- Notepad Modal Component ---
+function NotepadModal({ isOpen, onClose, onSave }: { isOpen: boolean, onClose: () => void, onSave: (text: string) => void }) {
+  const [text, setText] = useState('');
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <Card className="w-full max-w-3xl h-[80vh] flex flex-col shadow-2xl border-yellow-200 bg-[#fefce8] relative overflow-hidden">
+        {/* Header de Bloco de Notas */}
+        <div className="bg-yellow-100 border-b border-yellow-200 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-yellow-800">
+            <StickyNote className="h-6 w-6" />
+            <div>
+              <h3 className="font-bold text-lg leading-none">Bloco de Notas de Plantão</h3>
+              <p className="text-xs opacity-70">Escreva livremente. Clique em salvar para registrar.</p>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-yellow-800 hover:bg-yellow-200">
+            <X className="h-6 w-6" />
+          </Button>
+        </div>
+
+        {/* Área de Texto (Linhas de caderno) */}
+        <div className="flex-1 p-0 relative bg-[#fefce8]">
+          <textarea
+            className="w-full h-full p-6 text-lg leading-8 bg-transparent border-none resize-none focus:ring-0 outline-none text-slate-800 font-medium"
+            style={{ 
+              backgroundImage: 'linear-gradient(transparent, transparent 31px, #e5e7eb 31px)',
+              backgroundSize: '100% 32px',
+              lineHeight: '32px'
+            }}
+            placeholder="Digite aqui as ocorrências do dia, observações ou pendências..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            autoFocus
+          />
+        </div>
+
+        {/* Footer Actions */}
+        <div className="p-4 border-t border-yellow-200 bg-yellow-50 flex justify-end gap-3">
+          <Button 
+            type="button" 
+            variant="ghost" 
+            onClick={onClose}
+            className="text-yellow-900 hover:bg-yellow-100"
+          >
+            Cancelar
+          </Button>
+          <Button 
+            type="button" 
+            onClick={() => {
+              if (!text.trim()) return alert("O bloco de notas está vazio.");
+              onSave(text);
+              setText(''); // Limpa após salvar
+            }}
+            className="bg-yellow-600 hover:bg-yellow-700 text-white shadow-md border-yellow-700"
+          >
+            <Save className="h-4 w-4 mr-2" />
+            Salvar em Ocorrências
+          </Button>
+        </div>
+      </Card>
+    </div>
   );
 }
 
@@ -185,6 +252,7 @@ function OcorrenciaForm({ ocorrencia, onSubmit, onCancel }: any) {
 export default function Ocorrencias() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
+  const [showNotepad, setShowNotepad] = useState(false);
   const [editingOcorrencia, setEditingOcorrencia] = useState<any>(null);
   const [viewingOcorrencia, setViewingOcorrencia] = useState<any>(null);
   const queryClient = useQueryClient();
@@ -203,6 +271,7 @@ export default function Ocorrencias() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ocorrencias'] });
       setShowForm(false);
+      setShowNotepad(false);
       setEditingOcorrencia(null);
     },
   });
@@ -224,6 +293,16 @@ export default function Ocorrencias() {
     },
   });
 
+  const handleSaveNotepad = (text: string) => {
+    // Salva o texto do notepad como uma nova ocorrência simples
+    createMutation.mutate({
+      relato: text,
+      // Campos de funcionário ficam em branco ou podem ser preenchidos pelo backend com o usuário logado
+      funcionario_saindo_nome: 'Registro via Bloco de Notas',
+      data_registro: new Date().toISOString()
+    });
+  };
+
   const filteredOcorrencias = ocorrencias.filter((o: any) => {
     const matchSearch = o.relato?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                        o.funcionario_saindo_nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -238,17 +317,27 @@ export default function Ocorrencias() {
           <h1 className="text-3xl font-bold text-slate-900">Ocorrências e Passagem de Turno</h1>
           <p className="text-slate-600 mt-1">Registro de ocorrências e troca de turno</p>
         </div>
-        <Button
-          type="button"
-          onClick={() => {
-            setEditingOcorrencia(null);
-            setShowForm(true);
-          }}
-          className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg"
-        >
-          <Plus className="h-5 w-5 mr-2" />
-          Nova Ocorrência
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            onClick={() => setShowNotepad(true)}
+            className="bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg"
+          >
+            <PenLine className="h-5 w-5 mr-2" />
+            Bloco de Notas
+          </Button>
+          <Button
+            type="button"
+            onClick={() => {
+              setEditingOcorrencia(null);
+              setShowForm(true);
+            }}
+            className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 shadow-lg"
+          >
+            <Plus className="h-5 w-5 mr-2" />
+            Nova Ocorrência
+          </Button>
+        </div>
       </div>
 
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
@@ -265,6 +354,13 @@ export default function Ocorrencias() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Notepad Modal */}
+      <NotepadModal 
+        isOpen={showNotepad} 
+        onClose={() => setShowNotepad(false)} 
+        onSave={handleSaveNotepad} 
+      />
 
       {showForm && (
         <OcorrenciaForm
