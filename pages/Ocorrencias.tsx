@@ -53,6 +53,72 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
   );
 }
 
+// --- Ocorrencia Details Modal ---
+function OcorrenciaDetailsModal({ data, onClose, onDelete }: { data: any, onClose: () => void, onDelete: (id: string) => void }) {
+  if (!data) return null;
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in zoom-in-95 duration-200">
+      <Card className="w-full max-w-2xl shadow-2xl bg-white border-0 max-h-[90vh] overflow-y-auto">
+        <CardHeader className="border-b pb-4 sticky top-0 bg-white z-10 flex flex-row items-center justify-between">
+          <CardTitle className="text-xl font-bold text-slate-900">Detalhes da Ocorrência</CardTitle>
+          <Button variant="ghost" size="icon" onClick={onClose} type="button">
+            <X className="h-5 w-5" />
+          </Button>
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg">
+              {data.funcionario_saindo_nome && (
+                <div>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Funcionário Saindo</span>
+                  <p className="font-medium text-slate-900 text-lg">{data.funcionario_saindo_nome}</p>
+                </div>
+              )}
+              {data.funcionario_entrando_nome && (
+                <div>
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Funcionário Entrando</span>
+                  <p className="font-medium text-slate-900 text-lg">{data.funcionario_entrando_nome}</p>
+                </div>
+              )}
+              {data.data_registro && (
+                <div className="md:col-span-2 border-t pt-2 mt-2">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Data do Registro</span>
+                  <p className="font-medium text-slate-900 flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-blue-600" />
+                    {format(new Date(data.data_registro), "dd 'de' MMMM 'de' yyyy 'às' HH:mm", { locale: ptBR })}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2">Relato / Ocorrências</span>
+              <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-slate-800 whitespace-pre-wrap leading-relaxed shadow-sm">
+                {data.relato}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <DeleteAction onConfirm={() => {
+                onDelete(data.id);
+                onClose();
+              }} />
+              <Button
+                type="button"
+                onClick={onClose}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-900"
+              >
+                Fechar
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // --- Form ---
 function OcorrenciaForm({ ocorrencia, onSubmit, onCancel }: any) {
   const [formData, setFormData] = useState(ocorrencia || {
@@ -207,16 +273,6 @@ export default function Ocorrencias() {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, data }: any) => base44.entities.Ocorrencia.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['ocorrencias'] });
-      setShowForm(false);
-      setEditingOcorrencia(null);
-      setViewingOcorrencia(null);
-    },
-  });
-
   const deleteMutation = useMutation({
     mutationFn: (id: any) => base44.entities.Ocorrencia.delete(id),
     onSuccess: () => {
@@ -281,82 +337,24 @@ export default function Ocorrencias() {
         </CardContent>
       </Card>
 
+      {/* Details Modal */}
+      <OcorrenciaDetailsModal 
+        data={viewingOcorrencia} 
+        onClose={() => setViewingOcorrencia(null)} 
+        onDelete={(id) => deleteMutation.mutate(id)}
+      />
+
       {showForm && (
         <OcorrenciaForm
           ocorrencia={editingOcorrencia}
           onSubmit={(data: any) => {
-            if (editingOcorrencia) {
-              updateMutation.mutate({ id: editingOcorrencia.id, data });
-            } else {
-              createMutation.mutate(data);
-            }
+            createMutation.mutate(data);
           }}
           onCancel={() => {
             setShowForm(false);
             setEditingOcorrencia(null);
           }}
         />
-      )}
-
-      {viewingOcorrencia && (
-        <Card className="border-0 shadow-xl bg-white/90 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-start mb-4">
-              <h2 className="text-xl font-bold text-slate-900">Detalhes da Ocorrência</h2>
-              <Button variant="ghost" size="icon" onClick={() => setViewingOcorrencia(null)} type="button">
-                <Search className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {viewingOcorrencia.funcionario_saindo_nome && (
-                  <div>
-                    <span className="text-sm text-slate-500">Funcionário Saindo:</span>
-                    <p className="font-medium text-slate-900">{viewingOcorrencia.funcionario_saindo_nome}</p>
-                  </div>
-                )}
-                {viewingOcorrencia.funcionario_entrando_nome && (
-                  <div>
-                    <span className="text-sm text-slate-500">Funcionário Entrando:</span>
-                    <p className="font-medium text-slate-900">{viewingOcorrencia.funcionario_entrando_nome}</p>
-                  </div>
-                )}
-                {viewingOcorrencia.data_registro && (
-                  <div>
-                    <span className="text-sm text-slate-500">Data:</span>
-                    <p className="font-medium text-slate-900">
-                      {format(new Date(viewingOcorrencia.data_registro), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              <div>
-                <span className="text-sm text-slate-500">Relato:</span>
-                <div className="mt-2 p-4 bg-slate-50 rounded-lg">
-                  <p className="text-slate-700 whitespace-pre-wrap">{viewingOcorrencia.relato}</p>
-                </div>
-              </div>
-
-              <div className="flex gap-2 pt-4 border-t">
-                {/* Botão Editar removido conforme padrão */}
-                <DeleteAction onConfirm={() => {
-                  deleteMutation.mutate(viewingOcorrencia.id);
-                  setViewingOcorrencia(null);
-                }} />
-                <Button
-                  type="button"
-                  onClick={() => setViewingOcorrencia(null)}
-                  variant="ghost"
-                  className="ml-auto"
-                >
-                  Fechar
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       )}
 
       <div className="grid gap-4">
@@ -407,10 +405,11 @@ export default function Ocorrencias() {
                       </div>
                     </div>
 
-                    <div className="bg-slate-50 p-4 rounded-lg">
+                    <div className="bg-slate-50 p-4 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors" onClick={() => setViewingOcorrencia(ocorrencia)}>
                       <p className="text-slate-700 line-clamp-3 whitespace-pre-wrap">
                         {ocorrencia.relato}
                       </p>
+                      <p className="text-xs text-blue-600 mt-2 font-medium">Clique para ver completo</p>
                     </div>
 
                     <div className="flex flex-wrap gap-2 pt-2 border-t">
