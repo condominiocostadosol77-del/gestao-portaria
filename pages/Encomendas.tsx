@@ -53,13 +53,14 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
           className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
           onClick={(e) => {
             e.stopPropagation();
-            setOpen(true);
+            // setOpen is handled by PopoverTrigger automatically but good to be explicit if needed
           }}
         >
           <CheckCircle2 className="h-4 w-4 mr-1" />
           Registrar Retirada
         </Button>
       </PopoverTrigger>
+      {/* onClick stopPropagation on content ensures clicking inside the popover doesn't close it or trigger parent clicks */}
       <PopoverContent className="w-80 bottom-full mb-2" align="end" onClick={(e) => e.stopPropagation()}>
         <div className="grid gap-4">
           <div className="space-y-2">
@@ -124,7 +125,6 @@ function RetiradaEmMassaAction({ items, onConfirm }: { items: any[], onConfirm: 
           className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm gap-2"
           onClick={(e) => {
             e.stopPropagation();
-            setOpen(true);
           }}
         >
           <Layers className="h-4 w-4" />
@@ -181,7 +181,6 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
           variant="destructive"
           onClick={(e) => {
             e.stopPropagation();
-            setOpen(true);
           }}
         >
           <Trash2 className="h-4 w-4 mr-1" />
@@ -325,7 +324,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
                       <Command>
                         <CommandInput 
                           autoFocus
-                          placeholder="Digite o nome ou unidade..." 
+                          placeholder="Digite nome, unidade ou bloco..." 
                           value={searchQuery}
                           onChange={(e: any) => setSearchQuery(e.target.value)}
                           onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }}
@@ -648,10 +647,6 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
     for (const id of ids) {
       await registrarRetirada(id, quemRecebeu);
     }
-    // No need to invalidate here as registrarRetirada does it (or parent component handles it?)
-    // Actually registrarRetirada triggers a mutation that invalidates. 
-    // But since we loop, we might cause many re-renders. Ideally batch update backend.
-    // For now, loop is fine for client-side logic.
     alert('Retiradas registradas com sucesso!');
   };
 
@@ -774,7 +769,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
                 placeholder="Buscar por nome, unidade, bloco, remetente..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 !text-black"
+                className="pl-10 h-12 !text-black"
                 style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
               />
             </div>
@@ -794,7 +789,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
             </div>
             <Tabs value={statusFilter} onValueChange={(val) => {
               setStatusFilter(val);
-              setSelectedUnitGroup(null);
+              setSelectedUnitGroup(null); // Reset group selection on tab change
             }}>
               <TabsList className="bg-slate-100">
                 <TabsTrigger value="todos" className="gap-2">
