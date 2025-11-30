@@ -269,25 +269,38 @@ export default function Empresas() {
         </Button>
       </div>
 
+      {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
+          <div className="flex flex-col space-y-4">
+            {/* Barra de busca no topo (100% largura) */}
+            <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
               <Input
                 placeholder="Buscar por nome..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 !text-black"
-                style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
+                className="pl-10 h-12 w-full !text-black"
+                style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
               />
             </div>
-            <div className="flex items-center gap-2">
+
+            {/* Linha de filtros (Data e Abas) */}
+            <div className="flex flex-col lg:flex-row gap-4 justify-between items-center">
+              <Tabs value={statusFilter} onValueChange={setStatusFilter} className="w-full lg:w-auto">
+                <TabsList className="bg-slate-100 w-full lg:w-auto">
+                  <TabsTrigger value="todos" className="flex-1 lg:flex-none">Todos</TabsTrigger>
+                  <TabsTrigger value="ativa" className="flex-1 lg:flex-none">Ativas</TabsTrigger>
+                  <TabsTrigger value="inativa" className="flex-1 lg:flex-none">Inativas</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="flex items-center gap-2 w-full lg:w-auto">
                 <Input
                   type="date"
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
-                  className="w-auto !text-black"
+                  className="w-full lg:w-auto h-10 !text-black"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
@@ -295,14 +308,8 @@ export default function Empresas() {
                     <X className="h-4 w-4" />
                   </Button>
                 )}
+              </div>
             </div>
-            <Tabs value={statusFilter} onValueChange={setStatusFilter}>
-              <TabsList className="bg-slate-100">
-                <TabsTrigger value="todos">Todos</TabsTrigger>
-                <TabsTrigger value="ativa">Ativas</TabsTrigger>
-                <TabsTrigger value="inativa">Inativas</TabsTrigger>
-              </TabsList>
-            </Tabs>
           </div>
         </CardContent>
       </Card>
