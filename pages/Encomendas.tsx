@@ -6,77 +6,31 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Input, Badge, Tabs, T
 import { 
   Plus, 
   Search, 
-  Package, 
-  CheckCircle2, 
-  Clock, 
-  Mail, 
-  X, 
-  Save, 
-  Check, 
-  ChevronsUpDown, 
-  Trash2, 
-  AlertTriangle, 
-  CalendarIcon, 
-  ChevronDown, 
-  ChevronUp, 
-  Box, 
-  Loader2,
-  Barcode
+  Package,
+  CheckCircle2,
+  Clock,
+  Mail,
+  X,
+  Save,
+  Check,
+  ChevronsUpDown,
+  Trash2,
+  AlertTriangle,
+  CalendarIcon,
+  ChevronDown,
+  ChevronUp,
+  Box,
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '../lib/utils';
 
-// --- Helpers for Metadata in Observations ---
-const packMetadata = (data: any) => {
-  const { categoria_destinatario, nome_destinatario, ...rest } = data;
-  let obs = rest.observacoes || '';
-  
-  // Remove existing metadata
-  obs = obs.replace(/#META_ENC:.*?#\s*/g, '');
-
-  if (categoria_destinatario && categoria_destinatario !== 'morador') {
-    const meta = JSON.stringify({ cat: categoria_destinatario, nom: nome_destinatario });
-    obs = `#META_ENC:${meta}# ${obs}`;
-  }
-  
-  return { ...rest, observacoes: obs.trim() };
-};
-
-const unpackMetadata = (encomenda: any) => {
-  const obs = encomenda.observacoes || '';
-  const match = obs.match(/#META_ENC:(.*?)#/);
-  
-  let categoria_destinatario = 'morador';
-  let nome_destinatario = '';
-  let cleanObservacoes = obs;
-
-  if (match) {
-    try {
-      const meta = JSON.parse(match[1]);
-      categoria_destinatario = meta.cat || 'morador';
-      nome_destinatario = meta.nom || '';
-      cleanObservacoes = obs.replace(match[0], '').trim();
-    } catch (e) {
-      console.error('Error parsing metadata', e);
-    }
-  }
-
-  return {
-    ...encomenda,
-    categoria_destinatario,
-    nome_destinatario,
-    observacoes: cleanObservacoes,
-    raw_observacoes: obs
-  };
-};
-
-// --- Retirada Action Component (Fixado) ---
+// --- Retirada Action Component ---
 function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (id: string, nome: string) => void }) {
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState('');
 
-  const handleConfirm = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Impede fechar o accordion
+  const handleConfirm = () => {
     if (nome.trim()) {
       onConfirm(encomanda.id, nome);
       setOpen(false);
@@ -91,17 +45,13 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
           type="button"
           size="sm"
           className="bg-green-600 hover:bg-green-700 text-white"
-          onClick={(e) => {
-            e.stopPropagation(); // Impede abrir/fechar o accordion ao clicar no botão
-            setOpen(true);
-          }}
+          onClick={(e) => e.stopPropagation()}
         >
           <CheckCircle2 className="h-4 w-4 mr-1" />
           Registrar Retirada
         </Button>
       </PopoverTrigger>
-      {/* Adicionado onClick stopPropagation no content para garantir que cliques dentro não fechem nada */}
-      <PopoverContent className="w-80 bottom-full mb-2" align="end" onClick={(e) => e.stopPropagation()}>
+      <PopoverContent className="w-80 bottom-full mb-2" align="end">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Confirmar Retirada</h4>
@@ -120,12 +70,7 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
                 autoFocus
               />
             </div>
-            <Button 
-              type="button" 
-              onClick={handleConfirm} 
-              size="sm" 
-              className="w-full mt-2"
-            >
+            <Button onClick={handleConfirm} size="sm" className="w-full mt-2">
               Confirmar
             </Button>
           </div>
@@ -146,16 +91,13 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
           type="button"
           size="sm"
           variant="destructive"
-          onClick={(e) => {
-            e.stopPropagation();
-            setOpen(true);
-          }}
+          onClick={(e) => e.stopPropagation()}
         >
           <Trash2 className="h-4 w-4 mr-1" />
           Excluir
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-64 bottom-full mb-2" align="end" onClick={(e) => e.stopPropagation()}>
+      <PopoverContent className="w-64 bottom-full mb-2" align="end">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none flex items-center gap-2 text-red-600">
@@ -186,12 +128,12 @@ function DeleteAction({ onConfirm }: { onConfirm: () => void }) {
 
 // --- Encomenda Form ---
 function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel, isSubmitting }: any) {
-  const initialData = encomenda ? unpackMetadata(encomenda) : {
+  const [formData, setFormData] = useState(encomenda || {
     morador_id: '',
     unidade: '',
     bloco: '',
     tipo: 'encomenda',
-    remetente: '',
+    remetente: '', // Manter no state para compatibilidade, mesmo que não usado no form manual
     empresa_id: '',
     empresa_nome: '',
     descricao: '',
@@ -201,9 +143,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel, isS
     status: 'aguardando_retirada',
     categoria_destinatario: 'morador',
     nome_destinatario: ''
-  };
-
-  const [formData, setFormData] = useState(initialData);
+  });
   const [usarMoradorCadastrado, setUsarMoradorCadastrado] = useState(false);
   const [openMorador, setOpenMorador] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -221,18 +161,19 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel, isS
     }
   };
 
+  // Lógica de filtro robusta
   const filteredMoradores = moradores?.filter((m: any) => {
     const searchLower = (searchQuery || "").toLowerCase();
     const nome = (m.nome_completo || "").toLowerCase();
     const unidade = (m.unidade || "").toString().toLowerCase();
     const bloco = (m.bloco || "").toLowerCase();
+    
     return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const payload = packMetadata(formData);
-    onSubmit(payload, shouldNotify);
+    onSubmit(formData, shouldNotify);
   };
 
   return (
@@ -407,6 +348,8 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel, isS
               </Select>
             </div>
 
+            {/* Campo Remetente removido no modo manual conforme solicitado */}
+            
             <div>
               <Label htmlFor="unidade">Unidade *</Label>
               <Input
@@ -522,13 +465,11 @@ export default function Encomendas() {
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const queryClient = useQueryClient();
 
-  const { data: rawEncomendas = [], isLoading } = useQuery({
+  const { data: encomendas = [], isLoading } = useQuery({
     queryKey: ['encomendas'],
     queryFn: () => base44.entities.Encomenda.list('-created_date', 100),
     staleTime: 30000,
   });
-
-  const encomendas = rawEncomendas.map((e: any) => unpackMetadata(e));
 
   const { data: moradores = [] } = useQuery({
     queryKey: ['moradores'],
@@ -542,6 +483,7 @@ export default function Encomendas() {
     staleTime: 30000,
   });
 
+  // Cálculos para os contadores
   const totalEncomendas = encomendas.length;
   const encomendasPendentes = encomendas.filter((e: any) => e.status === 'aguardando_retirada').length;
   const encomendasRetiradas = encomendas.filter((e: any) => e.status === 'retirada').length;
@@ -552,6 +494,8 @@ export default function Encomendas() {
 
   const enviarWhatsApp = (encomenda: any, morador: any) => {
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    
+    // Buscar todos os moradores da mesma unidade e bloco se não houver morador específico
     let destinatarios = [];
     if (morador) {
       destinatarios = [morador];
@@ -571,6 +515,7 @@ export default function Encomendas() {
     
     destinatarios.forEach((m: any) => {
       if (!m.telefone) return;
+      
       const mensagem = `🏢 *NOTIFICAÇÃO DA PORTARIA*
 
 Olá, ${m.nome_completo}! 👋
@@ -585,7 +530,10 @@ ${encomenda.codigo_rastreio ? `🔢 *Código de Rastreio:* ${encomenda.codigo_ra
 ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_retirada}` : ''}
 ⏰ *Recebido às:* ${hora}
 
-📍 Por favor, compareça à portaria para realizar a retirada.`;
+📍 Por favor, compareça à portaria para realizar a retirada.
+
+_Atenciosamente,_
+_Equipe da Portaria_`;
 
       const url = `https://wa.me/${m.telefone.replace(/\D/g, '')}?text=${encodeURIComponent(mensagem)}`;
       window.open(url, '_blank');
@@ -594,9 +542,20 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
 
   const createMutation = useMutation({
     mutationFn: (data: any) => {
+      // PREPARAÇÃO DOS DADOS PARA EVITAR ERRO DE SCHEMA
+      // Separa os campos que não existem na tabela
+      const { categoria_destinatario, nome_destinatario, ...validData } = data;
+      
+      // Constrói uma observação com os dados extras se houver nome manual
+      let obs = validData.observacoes || '';
+      if (nome_destinatario) {
+        obs = `Destinatário: ${nome_destinatario} (${categoria_destinatario === 'parente' ? 'Parente' : 'Externo'}).\n${obs}`;
+      }
+
       const codigoRetirada = Math.random().toString(36).substring(2, 8).toUpperCase();
       return base44.entities.Encomenda.create({
-        ...data,
+        ...validData,
+        observacoes: obs, // Salva os dados extras aqui
         codigo_retirada: codigoRetirada,
         data_hora_recebimento: new Date().toISOString()
       });
@@ -608,45 +567,51 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
     },
     onError: (error: any) => {
       console.error(error);
-      alert('Erro ao cadastrar. Verifique os dados.');
+      alert('Erro ao cadastrar encomenda. Verifique a conexão com o banco de dados.');
     }
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: any) => base44.entities.Encomenda.update(id, data),
+    mutationFn: ({ id, data }: any) => {
+      // Mesma lógica de sanitização para update
+      const { categoria_destinatario, nome_destinatario, ...validData } = data;
+      
+      // Não sobrescrevemos observações se não houver mudança explícita de destinatário
+      // mas como é edição, podemos assumir que o usuário viu o form.
+      // Simplificação: enviamos o que temos, mas garantimos que campos inválidos não vão.
+      
+      return base44.entities.Encomenda.update(id, validData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['encomendas'] });
       setShowForm(false);
       setEditingEncomenda(null);
     },
-    onError: (error: any) => alert('Erro ao atualizar.')
+    onError: (error: any) => {
+      console.error(error);
+      alert('Erro ao atualizar encomenda.');
+    }
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: any) => base44.entities.Encomenda.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['encomendas'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['encomendas'] });
+    },
   });
 
   const registrarRetirada = async (id: string, quemRecebeu: string) => {
     const encomenda = encomendas.find((e: any) => e.id === id);
     if (!encomenda) return;
 
-    const dataToUpdate = {
+    await updateMutation.mutateAsync({
+      id: id,
+      data: {
         ...encomenda,
         status: 'retirada',
         data_hora_retirada: new Date().toISOString(),
         quem_recebeu: quemRecebeu
-    };
-    delete dataToUpdate.categoria_destinatario;
-    delete dataToUpdate.nome_destinatario;
-    if (dataToUpdate.raw_observacoes) {
-        dataToUpdate.observacoes = dataToUpdate.raw_observacoes;
-        delete dataToUpdate.raw_observacoes;
-    }
-
-    await updateMutation.mutateAsync({
-      id: id,
-      data: dataToUpdate
+      }
     });
   };
 
@@ -655,7 +620,6 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
       const morador = moradores.find((m: any) => m.id === encomenda.morador_id);
       return morador?.nome_completo || null;
     }
-    if (encomenda.nome_destinatario) return encomenda.nome_destinatario;
     return null;
   };
 
@@ -663,6 +627,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
     const moradorNome = getMoradorNome(e)?.toLowerCase() || '';
     const searchLower = searchTerm.toLowerCase();
     
+    // Date filter
     let dateMatch = true;
     if (dateFilter) {
       const itemDate = e.data_hora_recebimento || e.created_date;
@@ -678,12 +643,14 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
                        e.remetente?.toLowerCase().includes(searchLower) ||
                        e.codigo_retirada?.toLowerCase().includes(searchLower) ||
                        e.bloco?.toLowerCase().includes(searchLower) ||
+                       e.observacoes?.toLowerCase().includes(searchLower) || // Buscar também em observações onde está o destinatário manual
                        moradorNome.includes(searchLower);
                        
     const matchStatus = statusFilter === 'todos' || e.status === statusFilter;
     return matchSearch && matchStatus && dateMatch;
   });
 
+  // Agrupamento para a aba 'aguardando_retirada'
   const groupedPending = React.useMemo(() => {
     if (statusFilter !== 'aguardando_retirada') return {};
     
@@ -738,6 +705,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
 
   return (
     <div className="p-6 lg:p-8 space-y-6">
+      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold text-slate-900">Encomendas</h1>
@@ -756,6 +724,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
         </Button>
       </div>
 
+      {/* Filters */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -764,7 +733,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
               <Input
                 placeholder="Buscar por nome, unidade, bloco, remetente..."
                 value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 !text-black"
                 style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
               />
@@ -809,6 +778,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
         </CardContent>
       </Card>
 
+      {/* Form */}
       {showForm && (
         <EncomendaForm
           encomenda={editingEncomenda}
@@ -836,6 +806,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
         />
       )}
 
+      {/* Lista de Encomendas */}
       <div className="grid gap-4">
         {isLoading ? (
           <Card className="p-8 text-center">
@@ -847,6 +818,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
             <p className="text-slate-500">Nenhuma encomenda encontrada {dateFilter ? 'nesta data' : ''}</p>
           </Card>
         ) : statusFilter === 'aguardando_retirada' ? (
+          // Renderização Agrupada para Pendentes
           Object.entries(groupedPending).map(([key, group]: [string, any]) => {
             const isExpanded = expandedGroups[key];
             
@@ -890,25 +862,17 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
                               <div>
                                 <p className="font-semibold text-slate-900">{encomenda.tipo.toUpperCase()}</p>
                                 <div className="space-y-1 mt-1">
-                                  {(getMoradorNome(encomenda) || encomenda.nome_destinatario) && (
+                                  {(getMoradorNome(encomenda) || (encomenda.observacoes && encomenda.observacoes.includes('Destinatário:'))) && (
                                     <p className="text-sm text-slate-900 font-medium">
-                                      <span className="text-slate-500 font-normal">Destinatário:</span> {getMoradorNome(encomenda) || encomenda.nome_destinatario} 
-                                      {encomenda.categoria_destinatario && encomenda.categoria_destinatario !== 'morador' && (
-                                        <span className="text-xs text-slate-400 ml-1">({encomenda.categoria_destinatario})</span>
-                                      )}
+                                      <span className="text-slate-500 font-normal">Destinatário:</span> {getMoradorNome(encomenda) || 'Ver Observações'}
                                     </p>
                                   )}
                                   <p className="text-sm text-slate-900 font-medium">
                                     <span className="text-slate-500 font-normal">Empresa:</span> {encomenda.empresa_nome || encomenda.remetente || 'Não informado'}
                                   </p>
                                 </div>
-                                {encomenda.descricao && (
-                                  <p className="text-xs text-slate-500 mt-1 italic">{encomenda.descricao}</p>
-                                )}
-                                {encomenda.codigo_rastreio && (
-                                  <p className="text-xs text-slate-500 mt-1">
-                                    Rastreio: <span className="font-medium text-slate-700">{encomenda.codigo_rastreio}</span>
-                                  </p>
+                                {encomenda.observacoes && (
+                                  <p className="text-xs text-slate-500 mt-1 italic">{encomenda.observacoes}</p>
                                 )}
                               </div>
                               <div className="text-right">
@@ -934,10 +898,12 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
             );
           })
         ) : (
+          // Renderização Padrão para Todos/Retirados
           filteredEncomendas.map((encomenda: any) => (
             <Card key={encomenda.id} className="border-0 shadow-lg hover:shadow-xl transition-all bg-white/80 backdrop-blur-sm">
               <CardContent className="p-6">
                 <div className="flex flex-col lg:flex-row gap-6">
+                  {/* Ícone/Foto */}
                   <div className="flex-shrink-0">
                     <div className={`h-24 w-24 rounded-xl flex items-center justify-center ${
                       encomenda.tipo === 'correspondencia' || encomenda.tipo === 'documento' 
@@ -954,10 +920,8 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
                         <h3 className="text-xl font-bold text-slate-900">
                           Unidade {encomenda.unidade}{encomenda.bloco ? ` - Bloco ${encomenda.bloco}` : ''}
                         </h3>
-                        {(getMoradorNome(encomenda) || encomenda.nome_destinatario) && (
-                          <p className="text-slate-700 font-medium">
-                            Destinatário: {getMoradorNome(encomenda) || encomenda.nome_destinatario}
-                          </p>
+                        {getMoradorNome(encomenda) && (
+                          <p className="text-slate-700 font-medium">Morador: {getMoradorNome(encomenda)}</p>
                         )}
                         {(encomenda.empresa_nome || encomenda.remetente) && (
                           <p className="text-slate-600">Empresa: {encomenda.empresa_nome || encomenda.remetente}</p>
@@ -979,12 +943,6 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
                           {encomenda.codigo_retirada}
                         </p>
                       </div>
-                      {encomenda.codigo_rastreio && (
-                        <div>
-                          <span className="text-slate-500">Rastreio:</span>
-                          <p className="font-medium text-slate-900 break-all">{encomenda.codigo_rastreio}</p>
-                        </div>
-                      )}
                       {encomenda.data_hora_recebimento && (
                         <div>
                           <span className="text-slate-500">Recebido em:</span>
@@ -1003,12 +961,13 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
                       )}
                     </div>
 
-                    {encomenda.descricao && (
+                    {encomenda.observacoes && (
                       <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
-                        {encomenda.descricao}
+                        {encomenda.observacoes}
                       </p>
                     )}
 
+                    {/* Actions */}
                     <div className="flex flex-wrap gap-2 pt-2">
                       {encomenda.status === 'aguardando_retirada' && (
                         <RetiradaAction 
