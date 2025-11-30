@@ -81,14 +81,16 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
     }
   };
 
+  // Lógica de filtro robusta
   const filteredEntregadores = entregadores?.filter((e: any) => {
     if (e.status !== 'ativo') return false;
     const searchLower = searchQuery.toLowerCase();
     const nomeMatch = e.nome_completo.toLowerCase().includes(searchLower);
     const cpfMatch = e.cpf && e.cpf.includes(searchLower);
     const rgMatch = e.rg && e.rg.includes(searchLower);
+    const empresaMatch = e.empresa && e.empresa.toLowerCase().includes(searchLower);
     
-    return nomeMatch || cpfMatch || rgMatch;
+    return nomeMatch || cpfMatch || rgMatch || empresaMatch;
   });
 
   const handleSubmit = () => {
@@ -133,6 +135,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
                 <PopoverContent className="w-full p-0">
                   <Command>
                     <CommandInput 
+                      autoFocus
                       placeholder="Digite o nome, CPF ou RG..." 
                       value={searchQuery}
                       onChange={(e: any) => setSearchQuery(e.target.value)}
@@ -159,7 +162,7 @@ function VisitaEntregadorForm({ visita, entregadores, empresas, onSubmit, onCanc
                               )}
                             />
                             <div>
-                              <div>{e.nome_completo} - {e.empresa}</div>
+                              <div className="font-medium">{e.nome_completo} - {e.empresa}</div>
                               {(e.cpf || e.rg) && (
                                 <div className="text-xs text-slate-500">
                                   {e.cpf && `CPF: ${e.cpf}`}
