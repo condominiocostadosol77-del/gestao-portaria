@@ -279,7 +279,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData, false); }} className="space-y-6">
+        <form onSubmit={(e) => { e.preventDefault(); }} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <div className="flex items-center gap-4 mb-4">
