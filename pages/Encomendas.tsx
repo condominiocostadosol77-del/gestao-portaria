@@ -279,7 +279,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
         </div>
       </CardHeader>
       <CardContent className="p-6">
-        <form onSubmit={(e) => { e.preventDefault(); onSubmit(formData, false); }} className="space-y-6">
+        <form className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
               <div className="flex items-center gap-4 mb-4">
@@ -465,6 +465,16 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
             </div>
 
             <div>
+              <Label htmlFor="remetente">Remetente</Label>
+              <Input
+                id="remetente"
+                value={formData.remetente}
+                onChange={(e: any) => setFormData({ ...formData, remetente: e.target.value })}
+                placeholder="Nome do remetente"
+              />
+            </div>
+
+            <div>
               <Label htmlFor="turno">Turno *</Label>
               <Select 
                 value={formData.turno} 
@@ -605,13 +615,17 @@ Olá, ${m.nome_completo}! 👋
 *INFORMAÇÕES:*
 🏠 *Unidade:* ${encomenda.unidade}${encomenda.bloco ? ` - Bloco ${encomenda.bloco}` : ''}
 ${encomenda.empresa_nome ? `🏢 *Empresa:* ${encomenda.empresa_nome}` : ''}
+${encomenda.remetente ? `👤 *Remetente:* ${encomenda.remetente}` : ''}
 ${encomenda.destinatario_alternativo ? `👤 *A/C:* ${encomenda.destinatario_alternativo}` : ''}
 ${encomenda.descricao ? `📝 *Descrição:* ${encomenda.descricao}` : ''}
 ${encomenda.codigo_rastreio ? `🔢 *Código de Rastreio:* ${encomenda.codigo_rastreio}` : ''}
 ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_retirada}` : ''}
 ⏰ *Recebido às:* ${hora}
 
-📍 Por favor, compareça à portaria para realizar a retirada.`;
+📍 Por favor, compareça à portaria para realizar a retirada.
+
+_Atenciosamente,_
+_Equipe da Portaria_`;
 
       const url = `https://wa.me/${m.telefone.replace(/\D/g, '')}?text=${encodeURIComponent(mensagem)}`;
       window.open(url, '_blank');
