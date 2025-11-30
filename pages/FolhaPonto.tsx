@@ -442,23 +442,51 @@ export default function FolhaPonto() {
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
         <CardContent className="p-6">
           <div className="flex flex-col gap-4">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-                <Input
-                  placeholder="Buscar por funcionário ou observação..."
-                  value={searchTerm}
-                  onChange={(e: any) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-12 bg-white text-black border-slate-300 shadow-sm"
-                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
-                />
-              </div>
-              <div className="flex items-center gap-2">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+              <Input
+                placeholder="Buscar por funcionário ou observação..."
+                value={searchTerm}
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                className="pl-10 h-12 w-full !text-black"
+                style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
+              />
+            </div>
+            
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+              <Tabs value={turnoFilter} onValueChange={setTurnoFilter} className="w-full lg:w-auto">
+                <TabsList className="bg-slate-100 w-full">
+                  <TabsTrigger value="todos" className="flex-1">Todos</TabsTrigger>
+                  <TabsTrigger value="diurno" className="flex-1">Diurno</TabsTrigger>
+                  <TabsTrigger value="noturno" className="flex-1">Noturno</TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              <div className="flex items-center gap-2 w-full lg:w-auto">
+                 <div className="flex items-center gap-2 flex-1">
+                    <Filter className="h-4 w-4 text-slate-500" />
+                    <Select value={funcionarioFilter} onValueChange={setFuncionarioFilter}>
+                      <SelectTrigger className="w-full sm:w-64">
+                        <SelectValue>
+                            {getFilterLabel()}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="todos">Todos os funcionários</SelectItem>
+                        {funcionarios.map((f: any) => (
+                          <SelectItem key={f.id} value={f.id}>
+                            {f.nome_completo}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                 </div>
+                 
                 <Input
                   type="date"
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
-                  className="w-auto h-12 bg-white text-black border-slate-300 shadow-sm"
+                  className="w-auto h-10 !text-black"
                   style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
                 />
                 {dateFilter && (
@@ -467,57 +495,29 @@ export default function FolhaPonto() {
                   </Button>
                 )}
               </div>
-              <Tabs value={turnoFilter} onValueChange={setTurnoFilter}>
-                <TabsList className="bg-slate-100">
-                  <TabsTrigger value="todos">Todos</TabsTrigger>
-                  <TabsTrigger value="diurno">Diurno</TabsTrigger>
-                  <TabsTrigger value="noturno">Noturno</TabsTrigger>
-                </TabsList>
-              </Tabs>
             </div>
 
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="flex items-center gap-2 flex-1 w-full sm:w-auto">
-                <Filter className="h-4 w-4 text-slate-500" />
-                <Select value={funcionarioFilter} onValueChange={setFuncionarioFilter}>
-                  <SelectTrigger className="w-full sm:w-64">
-                    <SelectValue>
-                        {getFilterLabel()}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="todos">Todos os funcionários</SelectItem>
-                    {funcionarios.map((f: any) => (
-                      <SelectItem key={f.id} value={f.id}>
-                        {f.nome_completo}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  type="button"
-                  onClick={handleClearAll}
-                  variant="destructive"
-                  className="gap-2"
-                  disabled={filteredRegistros.length === 0}
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Limpar Tudo
-                </Button>
-                <Button
-                  type="button"
-                  onClick={handleExportPDF}
-                  variant="outline"
-                  className="gap-2"
-                  disabled={filteredRegistros.length === 0}
-                >
-                  <Download className="h-4 w-4" />
-                  Exportar PDF
-                </Button>
-              </div>
+            <div className="flex justify-end gap-2 border-t pt-4 mt-2">
+              <Button
+                type="button"
+                onClick={handleClearAll}
+                variant="destructive"
+                className="gap-2"
+                disabled={filteredRegistros.length === 0}
+              >
+                <Trash2 className="h-4 w-4" />
+                Limpar Tudo
+              </Button>
+              <Button
+                type="button"
+                onClick={handleExportPDF}
+                variant="outline"
+                className="gap-2"
+                disabled={filteredRegistros.length === 0}
+              >
+                <Download className="h-4 w-4" />
+                Exportar PDF
+              </Button>
             </div>
           </div>
         </CardContent>
