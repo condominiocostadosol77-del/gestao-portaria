@@ -18,7 +18,6 @@ import {
   AlertTriangle,
   ArrowLeft,
   ChevronRight,
-  Box,
   Truck,
   Barcode,
   User,
@@ -326,7 +325,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
                       <Command>
                         <CommandInput 
                           autoFocus
-                          placeholder="Digite nome, unidade ou bloco..." 
+                          placeholder="Digite o nome ou unidade..." 
                           value={searchQuery}
                           onChange={(e: any) => setSearchQuery(e.target.value)}
                           onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }}
@@ -775,7 +774,7 @@ ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_re
                 placeholder="Buscar por nome, unidade, bloco, remetente..."
                 value={searchTerm}
                 onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 !text-black"
+                className="pl-10 !text-black"
                 style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
               />
             </div>
