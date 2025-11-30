@@ -37,8 +37,11 @@ class CloudEntityClient {
     if (sort) {
       const desc = sort.startsWith('-');
       const key = desc ? sort.substring(1) : sort;
-      // Mapeamento de campos de data
+      
+      // FIX: Mapeamento explícito de colunas para evitar erro 'created_date column not found'
+      // O frontend usa 'created_date', mas o Supabase usa 'created_at'
       const sortKey = key === 'created_date' ? 'created_at' : key;
+      
       query = query.order(sortKey, { ascending: !desc });
     } else {
       // Default sort
@@ -57,7 +60,7 @@ class CloudEntityClient {
       return [];
     }
     
-    // Normalizar ID e datas
+    // Normalizar ID e datas para o formato esperado pelo frontend
     return (data || []).map((d: any) => ({ 
       ...d, 
       id: d.id.toString(), 
@@ -72,8 +75,11 @@ class CloudEntityClient {
     const sessionStr = localStorage.getItem('base44_session');
     const currentUser = sessionStr ? JSON.parse(sessionStr) : null;
 
+    // Remove campos virtuais que não existem no banco
+    const { created_date, ...cleanData } = data;
+
     const payload = {
-      ...data,
+      ...cleanData,
       registrado_por: currentUser ? currentUser.nome : 'Sistema',
     };
 
@@ -89,13 +95,17 @@ class CloudEntityClient {
 
   async update(id: string, data: any) {
     if (!supabase) return null;
-    const { data: updated, error } = await supabase.from(this.table).update(data).eq('id', id).select().single();
+
+    // Remove campos virtuais ou imutáveis
+    const { created_date, created_at, id: _id, ...cleanData } = data;
+
+    const { data: updated, error } = await supabase.from(this.table).update(cleanData).eq('id', id).select().single();
     
     if (error) {
       console.error(`Erro ao atualizar em ${this.table}:`, JSON.stringify(error, null, 2));
       throw error;
     }
-    return { ...updated, id: updated.id.toString() };
+    return { ...updated, id: updated.id.toString(), created_date: updated.created_at };
   }
 
   async delete(id: string) {
