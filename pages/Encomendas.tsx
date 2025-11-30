@@ -18,19 +18,23 @@ import {
   AlertTriangle,
   ArrowLeft,
   ChevronRight,
-  Box
+  Box,
+  Truck,
+  Barcode,
+  User,
+  Layers
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '../lib/utils';
 
-// --- Retirada Action Component ---
+// --- Retirada Action Component (Single) ---
 function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (id: string, nome: string) => void }) {
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState('');
 
   const handleConfirm = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent accidental form submission if inside a form
-    e.stopPropagation(); // Stop bubbling
+    e.preventDefault();
+    e.stopPropagation();
     
     if (nome.trim()) {
       onConfirm(encomanda.id, nome);
@@ -47,7 +51,7 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
         <Button
           type="button"
           size="sm"
-          className="bg-green-600 hover:bg-green-700 text-white"
+          className="bg-green-600 hover:bg-green-700 text-white shadow-sm"
           onClick={(e) => {
             e.stopPropagation();
             setOpen(true);
@@ -72,7 +76,8 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
                 id="quem_recebeu"
                 value={nome}
                 onChange={(e: any) => setNome(e.target.value)}
-                className="col-span-2 h-8"
+                className="col-span-2 h-8 !text-black"
+                style={{ backgroundColor: 'white', color: 'black' }}
                 autoFocus
                 onClick={(e: any) => e.stopPropagation()}
               />
@@ -84,6 +89,78 @@ function RetiradaAction({ encomanda, onConfirm }: { encomanda: any, onConfirm: (
               className="w-full mt-2"
             >
               Confirmar
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// --- Retirada Em Massa Action Component ---
+function RetiradaEmMassaAction({ items, onConfirm }: { items: any[], onConfirm: (ids: string[], nome: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [nome, setNome] = useState('');
+
+  const handleConfirm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (nome.trim()) {
+      const ids = items.map(i => i.id);
+      onConfirm(ids, nome);
+      setOpen(false);
+      setNome('');
+    } else {
+      alert("Por favor, informe quem retirou.");
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          size="sm"
+          className="bg-blue-600 hover:bg-blue-700 text-white shadow-sm gap-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpen(true);
+          }}
+        >
+          <Layers className="h-4 w-4" />
+          Retirar Todas ({items.length})
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 top-full mt-2" align="start" onClick={(e) => e.stopPropagation()}>
+        <div className="grid gap-4">
+          <div className="space-y-2">
+            <h4 className="font-medium leading-none text-blue-700">Retirada em Massa</h4>
+            <p className="text-sm text-muted-foreground">
+              Registrar saída para <strong>{items.length} itens</strong> desta unidade.
+            </p>
+          </div>
+          <div className="grid gap-2">
+            <div className="grid gap-2">
+              <Label htmlFor="quem_recebeu_massa">Nome de quem retirou</Label>
+              <Input
+                id="quem_recebeu_massa"
+                value={nome}
+                onChange={(e: any) => setNome(e.target.value)}
+                className="h-9 !text-black"
+                style={{ backgroundColor: 'white', color: 'black' }}
+                autoFocus
+                placeholder="Ex: Próprio morador"
+                onClick={(e: any) => e.stopPropagation()}
+              />
+            </div>
+            <Button 
+              type="button" 
+              onClick={handleConfirm} 
+              size="sm" 
+              className="w-full mt-2 bg-blue-600 hover:bg-blue-700"
+            >
+              Confirmar Baixa em Tudo
             </Button>
           </div>
         </div>
@@ -174,12 +251,10 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
   };
 
   const filteredMoradores = moradores?.filter((m: any) => {
-    // Proteção contra valores nulos/undefined
     const searchLower = (searchQuery || "").toLowerCase();
     const nome = (m.nome_completo || "").toLowerCase();
     const unidade = (m.unidade || "").toString().toLowerCase();
     const bloco = (m.bloco || "").toLowerCase();
-    
     return nome.includes(searchLower) || unidade.includes(searchLower) || bloco.includes(searchLower);
   });
 
@@ -251,7 +326,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
                       <Command>
                         <CommandInput 
                           autoFocus
-                          placeholder="Digite o nome ou unidade..." 
+                          placeholder="Digite nome, unidade ou bloco..." 
                           value={searchQuery}
                           onChange={(e: any) => setSearchQuery(e.target.value)}
                           onKeyDown={(e: any) => { if (e.key === 'Enter') e.preventDefault(); }}
@@ -450,10 +525,10 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
 export default function Encomendas() {
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFilter, setDateFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('aguardando_retirada'); // Padrão pendentes
+  const [statusFilter, setStatusFilter] = useState('aguardando_retirada'); // Default to pending
   const [showForm, setShowForm] = useState(false);
   const [editingEncomenda, setEditingEncomenda] = useState<any>(null);
-  const [selectedUnitGroup, setSelectedUnitGroup] = useState<string | null>(null); // State para grupo selecionado
+  const [selectedUnitGroup, setSelectedUnitGroup] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: encomendas = [], isLoading } = useQuery({
@@ -474,14 +549,13 @@ export default function Encomendas() {
     staleTime: 30000,
   });
 
-  // Cálculos para os contadores
+  // Counters
   const totalEncomendas = encomendas.length;
   const encomendasPendentes = encomendas.filter((e: any) => e.status === 'aguardando_retirada').length;
   const encomendasRetiradas = encomendas.filter((e: any) => e.status === 'retirada').length;
 
   const enviarWhatsApp = (encomenda: any, morador: any) => {
     const hora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    
     let destinatarios = [];
     if (morador) {
       destinatarios = [morador];
@@ -501,7 +575,6 @@ export default function Encomendas() {
     
     destinatarios.forEach((m: any) => {
       if (!m.telefone) return;
-      
       const mensagem = `🏢 *NOTIFICAÇÃO DA PORTARIA*
 
 Olá, ${m.nome_completo}! 👋
@@ -517,10 +590,7 @@ ${encomenda.codigo_rastreio ? `🔢 *Código de Rastreio:* ${encomenda.codigo_ra
 ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_retirada}` : ''}
 ⏰ *Recebido às:* ${hora}
 
-📍 Por favor, compareça à portaria para realizar a retirada.
-
-_Atenciosamente,_
-_Equipe da Portaria_`;
+📍 Por favor, compareça à portaria para realizar a retirada.`;
 
       const url = `https://wa.me/${m.telefone.replace(/\D/g, '')}?text=${encodeURIComponent(mensagem)}`;
       window.open(url, '_blank');
@@ -574,6 +644,18 @@ _Equipe da Portaria_`;
     });
   };
 
+  // Bulk Withdrawal Function
+  const registrarRetiradaEmMassa = async (ids: string[], quemRecebeu: string) => {
+    for (const id of ids) {
+      await registrarRetirada(id, quemRecebeu);
+    }
+    // No need to invalidate here as registrarRetirada does it (or parent component handles it?)
+    // Actually registrarRetirada triggers a mutation that invalidates. 
+    // But since we loop, we might cause many re-renders. Ideally batch update backend.
+    // For now, loop is fine for client-side logic.
+    alert('Retiradas registradas com sucesso!');
+  };
+
   const getMoradorNome = (encomenda: any) => {
     if (encomenda.morador_id) {
       const morador = moradores.find((m: any) => m.id === encomenda.morador_id);
@@ -586,7 +668,6 @@ _Equipe da Portaria_`;
     const moradorNome = getMoradorNome(e)?.toLowerCase() || '';
     const searchLower = searchTerm.toLowerCase();
     
-    // Date filter
     let dateMatch = true;
     if (dateFilter) {
       const itemDate = e.data_hora_recebimento || e.created_date;
@@ -608,7 +689,6 @@ _Equipe da Portaria_`;
     return matchSearch && matchStatus && dateMatch;
   });
 
-  // Grouping logic for pending tab
   const getGroupKey = (e: any) => {
     const bloco = e.bloco ? ` - Bloco ${e.bloco}` : '';
     return `Unidade ${e.unidade}${bloco}`;
@@ -660,7 +740,6 @@ _Equipe da Portaria_`;
     return <Package className="h-5 w-5 text-purple-600" />;
   };
 
-  // Determine what to render based on grouping state
   const itemsToRender = (statusFilter === 'aguardando_retirada' && selectedUnitGroup)
     ? filteredEncomendas.filter((e: any) => getGroupKey(e) === selectedUnitGroup)
     : filteredEncomendas;
@@ -695,9 +774,9 @@ _Equipe da Portaria_`;
               <Input
                 placeholder="Buscar por nome, unidade, bloco, remetente..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 !text-black"
-                style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
+                onChange={(e: any) => setSearchTerm(e.target.value)}
+                className="pl-10 h-12 !text-black"
+                style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
               />
             </div>
             <div className="flex items-center gap-2">
@@ -705,8 +784,8 @@ _Equipe da Portaria_`;
                   type="date"
                   value={dateFilter}
                   onChange={(e: any) => setDateFilter(e.target.value)}
-                  className="w-auto !text-black"
-                  style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
+                  className="w-auto h-12 !text-black"
+                  style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
                 />
                 {dateFilter && (
                   <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
@@ -716,7 +795,7 @@ _Equipe da Portaria_`;
             </div>
             <Tabs value={statusFilter} onValueChange={(val) => {
               setStatusFilter(val);
-              setSelectedUnitGroup(null); // Reset group selection on tab change
+              setSelectedUnitGroup(null);
             }}>
               <TabsList className="bg-slate-100">
                 <TabsTrigger value="todos" className="gap-2">
@@ -814,19 +893,27 @@ _Equipe da Portaria_`;
               /* View for Details List (Pending Selected or All/Retiradas) */
               <>
                 {statusFilter === 'aguardando_retirada' && selectedUnitGroup && (
-                  <div className="flex items-center mb-4">
-                    <Button 
-                      type="button"
-                      variant="ghost" 
-                      onClick={() => setSelectedUnitGroup(null)}
-                      className="text-slate-600 hover:text-slate-900 gap-2 pl-0"
-                    >
-                      <ArrowLeft className="h-4 w-4" />
-                      Voltar para lista agrupada
-                    </Button>
-                    <h2 className="text-lg font-semibold text-slate-800 ml-2 border-l pl-4 border-slate-300">
-                      {selectedUnitGroup}
-                    </h2>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                      <Button 
+                        type="button"
+                        variant="ghost" 
+                        onClick={() => setSelectedUnitGroup(null)}
+                        className="text-slate-600 hover:text-slate-900 gap-2 pl-0"
+                      >
+                        <ArrowLeft className="h-4 w-4" />
+                        Voltar para lista
+                      </Button>
+                      <h2 className="text-lg font-semibold text-slate-800 ml-2 border-l pl-4 border-slate-300">
+                        {selectedUnitGroup}
+                      </h2>
+                    </div>
+                    {itemsToRender.length > 1 && (
+                      <RetiradaEmMassaAction 
+                        items={itemsToRender}
+                        onConfirm={registrarRetiradaEmMassa}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -858,55 +945,75 @@ _Equipe da Portaria_`;
                                 <h3 className="text-xl font-bold text-slate-900">
                                   Unidade {encomenda.unidade}{encomenda.bloco ? ` - Bloco ${encomenda.bloco}` : ''}
                                 </h3>
-                                {getMoradorNome(encomenda) && (
-                                  <p className="text-slate-700 font-medium">Morador: {getMoradorNome(encomenda)}</p>
-                                )}
-                                {encomenda.remetente && (
-                                  <p className="text-slate-600">Remetente: {encomenda.remetente}</p>
-                                )}
+                                {/* DETALHE 1: DESTINATÁRIO */}
+                                <div className="flex items-center gap-2 mt-1 text-slate-700">
+                                  <User className="h-4 w-4 text-purple-500" />
+                                  <span className="font-medium">
+                                    Destinatário: {getMoradorNome(encomenda) || 'Morador não identificado'}
+                                  </span>
+                                </div>
                               </div>
                               {getStatusBadge(encomenda.status)}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-sm mt-2 bg-slate-50 p-3 rounded-lg border border-slate-100">
                               <div>
-                                <span className="text-slate-500">Tipo:</span>
-                                <p className="font-medium text-slate-900 capitalize">
-                                  {encomenda.tipo}
+                                <span className="text-xs text-slate-500 uppercase font-semibold">Tipo</span>
+                                <p className="font-medium text-slate-900 capitalize">{encomenda.tipo}</p>
+                              </div>
+                              
+                              {/* DETALHE 2: EMPRESA/REMETENTE */}
+                              <div>
+                                <span className="text-xs text-slate-500 uppercase font-semibold flex items-center gap-1">
+                                  <Truck className="h-3 w-3" /> Remetente
+                                </span>
+                                <p className="font-medium text-slate-900">
+                                  {encomenda.empresa_nome || encomenda.remetente || '-'}
                                 </p>
                               </div>
+
+                              {/* DETALHE 3: CÓDIGO DE RASTREIO */}
                               <div>
-                                <span className="text-slate-500">Código Retirada:</span>
-                                <p className="font-mono font-bold text-lg text-blue-600">
+                                <span className="text-xs text-slate-500 uppercase font-semibold flex items-center gap-1">
+                                  <Barcode className="h-3 w-3" /> Rastreio
+                                </span>
+                                <p className="font-medium text-slate-900 font-mono text-xs">
+                                  {encomenda.codigo_rastreio || '-'}
+                                </p>
+                              </div>
+
+                              <div>
+                                <span className="text-xs text-slate-500 uppercase font-semibold">Cód. Retirada</span>
+                                <p className="font-mono font-bold text-blue-600">
                                   {encomenda.codigo_retirada}
                                 </p>
                               </div>
-                              {encomenda.data_hora_recebimento && (
-                                <div>
-                                  <span className="text-slate-500">Recebido em:</span>
-                                  <p className="font-medium text-slate-900">
-                                    {format(new Date(encomenda.data_hora_recebimento), 'dd/MM/yyyy HH:mm')}
-                                  </p>
-                                </div>
-                              )}
+
+                              <div>
+                                <span className="text-xs text-slate-500 uppercase font-semibold">Recebido em</span>
+                                <p className="font-medium text-slate-900">
+                                  {format(new Date(encomenda.data_hora_recebimento), 'dd/MM/yy HH:mm')}
+                                </p>
+                              </div>
+
                               {encomenda.data_hora_retirada && (
                                 <div>
-                                  <span className="text-slate-500">Retirado em:</span>
+                                  <span className="text-xs text-slate-500 uppercase font-semibold">Retirado em</span>
                                   <p className="font-medium text-slate-900">
-                                    {format(new Date(encomenda.data_hora_retirada), 'dd/MM/yyyy HH:mm')}
+                                    {format(new Date(encomenda.data_hora_retirada), 'dd/MM/yy HH:mm')}
                                   </p>
                                 </div>
                               )}
                             </div>
 
                             {encomenda.descricao && (
-                              <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
-                                {encomenda.descricao}
+                              <p className="text-sm text-slate-600 italic mt-2">
+                                "{encomenda.descricao}"
                               </p>
                             )}
 
                             {/* Actions */}
-                            <div className="flex flex-wrap gap-2 pt-2">
+                            <div className="flex flex-wrap gap-2 pt-2 border-t mt-2">
                               {encomenda.status === 'aguardando_retirada' && (
                                 <RetiradaAction 
                                   encomanda={encomenda} 
@@ -917,8 +1024,9 @@ _Equipe da Portaria_`;
                             </div>
 
                             {encomenda.quem_recebeu && (
-                              <p className="text-sm text-slate-600">
-                                Retirado por: <span className="font-medium">{encomenda.quem_recebeu}</span>
+                              <p className="text-sm text-green-700 font-medium bg-green-50 p-2 rounded border border-green-100 mt-2">
+                                <Check className="h-3 w-3 inline mr-1" />
+                                Retirado por: {encomenda.quem_recebeu}
                               </p>
                             )}
                           </div>
