@@ -21,7 +21,8 @@ import {
   Truck,
   Barcode,
   User,
-  Layers
+  Layers,
+  Users
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '../lib/utils';
@@ -224,18 +225,20 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
     unidade: '',
     bloco: '',
     tipo: 'encomenda',
-    remetente: '',
+    remetente: '', // Usado apenas para parente/amigo na opção manual agora, ou geral
     empresa_id: '',
     empresa_nome: '',
     descricao: '',
     codigo_rastreio: '',
     observacoes: '',
     turno: 'diurno',
-    status: 'aguardando_retirada'
+    status: 'aguardando_retirada',
+    destinatario_alternativo: '' // Novo campo: Nome do parente/amigo
   });
   const [usarMoradorCadastrado, setUsarMoradorCadastrado] = useState(false);
   const [openMorador, setOpenMorador] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isParenteAmigo, setIsParenteAmigo] = useState(false); // Estado local para checkbox
 
   const handleMoradorChange = (moradorId: any) => {
     const morador = moradores.find((m: any) => m.id === moradorId);
@@ -362,6 +365,60 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
               )}
             </div>
 
+            {!usarMoradorCadastrado && (
+              <div className="md:col-span-2 space-y-3 border p-4 rounded-lg bg-slate-50">
+                <div className="flex items-center gap-2">
+                   <input 
+                      type="checkbox" 
+                      id="isParente"
+                      checked={isParenteAmigo}
+                      onChange={(e) => {
+                        setIsParenteAmigo(e.target.checked);
+                        if(!e.target.checked) setFormData({...formData, destinatario_alternativo: ''});
+                      }}
+                      className="w-4 h-4 accent-purple-600"
+                   />
+                   <Label htmlFor="isParente" className="cursor-pointer font-medium">Encomenda para Parente/Amigo?</Label>
+                </div>
+                
+                {isParenteAmigo && (
+                  <div className="animate-in fade-in slide-in-from-top-2">
+                     <Label htmlFor="destinatario_alternativo">Nome do Parente/Amigo *</Label>
+                     <Input
+                        id="destinatario_alternativo"
+                        value={formData.destinatario_alternativo}
+                        onChange={(e: any) => setFormData({ ...formData, destinatario_alternativo: e.target.value })}
+                        placeholder="Ex: João Silva (Primo)"
+                        className="mt-1"
+                     />
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div>
+              <Label htmlFor="unidade">Unidade *</Label>
+              <Input
+                id="unidade"
+                value={formData.unidade}
+                onChange={(e: any) => setFormData({ ...formData, unidade: e.target.value })}
+                placeholder="Ex: 101"
+                required
+                disabled={usarMoradorCadastrado}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="bloco">Bloco</Label>
+              <Input
+                id="bloco"
+                value={formData.bloco}
+                onChange={(e: any) => setFormData({ ...formData, bloco: e.target.value })}
+                placeholder="Ex: A"
+                disabled={usarMoradorCadastrado}
+              />
+            </div>
+
             <div>
               <Label htmlFor="tipo">Tipo *</Label>
               <Select 
@@ -407,7 +464,7 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
               </Select>
             </div>
 
-            {!usarMoradorCadastrado && (
+            {!usarMoradorCadastrado && !isParenteAmigo && (
               <div>
                 <Label htmlFor="remetente">Remetente</Label>
                 <Input
@@ -418,29 +475,6 @@ function EncomendaForm({ encomenda, moradores, empresas, onSubmit, onCancel }: a
                 />
               </div>
             )}
-
-            <div>
-              <Label htmlFor="unidade">Unidade *</Label>
-              <Input
-                id="unidade"
-                value={formData.unidade}
-                onChange={(e: any) => setFormData({ ...formData, unidade: e.target.value })}
-                placeholder="Ex: 101"
-                required
-                disabled={usarMoradorCadastrado}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="bloco">Bloco</Label>
-              <Input
-                id="bloco"
-                value={formData.bloco}
-                onChange={(e: any) => setFormData({ ...formData, bloco: e.target.value })}
-                placeholder="Ex: A"
-                disabled={usarMoradorCadastrado}
-              />
-            </div>
 
             <div>
               <Label htmlFor="turno">Turno *</Label>
@@ -584,6 +618,7 @@ Olá, ${m.nome_completo}! 👋
 🏠 *Unidade:* ${encomenda.unidade}${encomenda.bloco ? ` - Bloco ${encomenda.bloco}` : ''}
 ${encomenda.empresa_nome ? `🏢 *Empresa:* ${encomenda.empresa_nome}` : ''}
 ${encomenda.remetente ? `👤 *Remetente:* ${encomenda.remetente}` : ''}
+${encomenda.destinatario_alternativo ? `👤 *A/C:* ${encomenda.destinatario_alternativo}` : ''}
 ${encomenda.descricao ? `📝 *Descrição:* ${encomenda.descricao}` : ''}
 ${encomenda.codigo_rastreio ? `🔢 *Código de Rastreio:* ${encomenda.codigo_rastreio}` : ''}
 ${encomenda.codigo_retirada ? `🎫 *Código de Retirada:* ${encomenda.codigo_retirada}` : ''}
@@ -763,52 +798,41 @@ _Equipe da Portaria_`;
         </Button>
       </div>
 
-      {/* Filters */}
+      {/* Filters Section */}
       <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
-              <Input
-                placeholder="Buscar por nome, unidade, bloco, remetente..."
-                value={searchTerm}
-                onChange={(e: any) => setSearchTerm(e.target.value)}
-                className="pl-10 h-12 !text-black"
-                style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-                <Input
-                  type="date"
-                  value={dateFilter}
-                  onChange={(e: any) => setDateFilter(e.target.value)}
-                  className="w-auto h-12 !text-black"
-                  style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
-                />
-                {dateFilter && (
-                  <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-            </div>
+        <CardContent className="p-6 space-y-4">
+          {/* Full Width Search */}
+          <div className="relative w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400 pointer-events-none" size={20} style={{ opacity: 1 }} />
+            <Input
+              placeholder="Buscar por nome, unidade, bloco, remetente..."
+              value={searchTerm}
+              onChange={(e: any) => setSearchTerm(e.target.value)}
+              className="pl-10 h-12 w-full !text-black"
+              style={{ backgroundColor: 'white', color: 'black', height: '48px', opacity: 1 }}
+            />
+          </div>
+          
+          {/* Secondary Filters Row */}
+          <div className="flex flex-col lg:flex-row gap-4 justify-between">
             <Tabs value={statusFilter} onValueChange={(val) => {
               setStatusFilter(val);
               setSelectedUnitGroup(null); // Reset group selection on tab change
-            }}>
-              <TabsList className="bg-slate-100">
-                <TabsTrigger value="todos" className="gap-2">
+            }} className="w-full lg:w-auto">
+              <TabsList className="bg-slate-100 w-full lg:w-auto">
+                <TabsTrigger value="todos" className="gap-2 flex-1 lg:flex-none">
                   Todos
                   <span className="bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full text-xs">
                     {totalEncomendas}
                   </span>
                 </TabsTrigger>
-                <TabsTrigger value="aguardando_retirada" className="gap-2">
+                <TabsTrigger value="aguardando_retirada" className="gap-2 flex-1 lg:flex-none">
                   Pendentes
                   <span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full text-xs">
                     {encomendasPendentes}
                   </span>
                 </TabsTrigger>
-                <TabsTrigger value="retirada" className="gap-2">
+                <TabsTrigger value="retirada" className="gap-2 flex-1 lg:flex-none">
                   Retiradas
                   <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">
                     {encomendasRetiradas}
@@ -816,6 +840,21 @@ _Equipe da Portaria_`;
                 </TabsTrigger>
               </TabsList>
             </Tabs>
+
+            <div className="flex items-center gap-2">
+              <Input
+                type="date"
+                value={dateFilter}
+                onChange={(e: any) => setDateFilter(e.target.value)}
+                className="w-full lg:w-auto h-10 !text-black"
+                style={{ backgroundColor: 'white', color: 'black', height: '40px', opacity: 1 }}
+              />
+              {dateFilter && (
+                <Button type="button" variant="ghost" size="icon" onClick={() => setDateFilter('')} title="Limpar data">
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -950,6 +989,13 @@ _Equipe da Portaria_`;
                                     Destinatário: {getMoradorNome(encomenda) || 'Morador não identificado'}
                                   </span>
                                 </div>
+                                {/* DETALHE NOVO: A/C Parente/Amigo */}
+                                {encomenda.destinatario_alternativo && (
+                                  <div className="flex items-center gap-2 mt-1 text-sm text-orange-700 bg-orange-50 w-fit px-2 py-0.5 rounded">
+                                    <Users className="h-3 w-3" />
+                                    <span>Aos cuidados de: <strong>{encomenda.destinatario_alternativo}</strong></span>
+                                  </div>
+                                )}
                               </div>
                               {getStatusBadge(encomenda.status)}
                             </div>
